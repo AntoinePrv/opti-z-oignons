@@ -23,5 +23,46 @@ fn App() -> Element {
 
 #[component]
 fn Home() -> Element {
-    rsx! { "Group Assignment" }
+    rsx! {
+        h1 { "Group Assignment" }
+        Schema {}
+    }
+}
+
+#[component]
+fn Schema() -> Element {
+    let mut tables = use_signal(|| vec![6u32]);
+    const N_SEATS_ID: &'static str = "n_seats";
+
+    rsx! {
+        ul {
+            for (i , seats) in tables.iter().enumerate() {
+                // TODO Missing key
+                li { "Table {i} ({seats} seats)" }
+            }
+        }
+        form {
+            onsubmit: move |event| {
+                let n_seats_input = event
+                    .data
+                    .values()
+                    .remove(N_SEATS_ID)
+                    .map(|val| val.as_value())
+                    .and_then(|val| val.parse::<u32>().ok());
+                if let Some(n_seats) = n_seats_input {
+                    tables.push(n_seats)
+                }
+            },
+            label { r#for: N_SEATS_ID, "Number of seats" }
+            input {
+                id: N_SEATS_ID,
+                name: N_SEATS_ID,
+                r#type: "number",
+                min: 0,
+                step: 1,
+                value: 6,
+            }
+            button { r#type: "submit", "Add a table" }
+        }
+    }
 }
