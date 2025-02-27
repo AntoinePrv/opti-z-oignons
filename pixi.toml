@@ -27,7 +27,8 @@ taplo = ">=0.9.2"
 # Formatters
 fmt-cargo = "cargo fmt"
 fmt-taplo = "taplo fmt"
-fmt = { depends-on = ["fmt-taplo", "fmt-cargo"] }
+fmt-dx = "dx fmt"
+fmt = { depends-on = ["fmt-taplo", "fmt-cargo", "fmt-dx"] }
 # Checkers
 check-cargo = "cargo check --all-targets --workspace"
 check-clippy = { cmd = "cargo --locked clippy --fix --allow-staged", env = { RUSTFLAGS = "-Dwarnings", CARGO_TARGET_DIR = "$PIXI_PROJECT_ROOT/target/clippy" } }
