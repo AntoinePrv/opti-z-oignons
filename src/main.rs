@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use dioxus::prelude::*;
 
 const FAVICON: &str = concat!(
@@ -7,6 +9,10 @@ const FAVICON: &str = concat!(
     "</svg>"
 );
 const MAIN_CSS: Asset = asset!("/assets/main.css");
+
+type RelationshipStrength = u32;
+type PersonId = String;
+type Relationships = HashMap<PersonId, HashMap<PersonId, RelationshipStrength>>;
 
 fn main() {
     dioxus::launch(App);
@@ -24,17 +30,18 @@ fn App() -> Element {
 #[component]
 fn Home() -> Element {
     let tables = use_signal(|| vec![6u32]);
-    let persons = use_signal(Vec::<String>::new);
+    let relationships = use_signal(Relationships::new);
     rsx! {
         h1 { "Group Assignment" }
-        Schema { tables, persons }
+        Schema { tables, relationships }
         TableInput { tables }
-        PersonInput { persons }
+        PersonInput { relationships }
+        RelationshipInput { relationships }
     }
 }
 
 #[component]
-fn Schema(persons: Signal<Vec<String>>, tables: Signal<Vec<u32>>) -> Element {
+fn Schema(relationships: Signal<Relationships>, tables: Signal<Vec<u32>>) -> Element {
     rsx! {
         p { "Tables:" }
         ul {
@@ -45,16 +52,15 @@ fn Schema(persons: Signal<Vec<String>>, tables: Signal<Vec<u32>>) -> Element {
         }
         p { "Persons:" }
         ul {
-            for person in persons.iter() {
-                // TODO Missing key
-                li { "{person}" }
+            for person in relationships.read().keys() {
+                li { key: person, "{person}" }
             }
         }
     }
 }
 
 #[component]
-fn PersonInput(persons: Signal<Vec<String>>) -> Element {
+fn PersonInput(mut relationships: Signal<Relationships>) -> Element {
     const PERSON_NAME_ID: &'static str = "name";
 
     rsx! {
@@ -68,7 +74,7 @@ fn PersonInput(persons: Signal<Vec<String>>) -> Element {
                     .remove(PERSON_NAME_ID)
                     .map(|val| val.as_value());
                 if let Some(name) = name_input {
-                    persons.push(name)
+                    relationships.write().insert(name, HashMap::new());
                 }
             },
             label { r#for: PERSON_NAME_ID, "Name" }
@@ -110,6 +116,89 @@ fn TableInput(tables: Signal<Vec<u32>>) -> Element {
                 value: 6,
             }
             button { r#type: "submit", "Add a table" }
+        }
+    }
+}
+
+#[component]
+fn RelationshipInput(relationships: Signal<Relationships>) -> Element {
+    const RELATIONSHIP_STRENGTH_ID: &'static str = "relationship_strength";
+    const RELATIONSHIP_STRENGTH_DATALIST_ID: &'static str = "relationship_strength_datalist";
+    const RELATIONSHIP_PERSON_1_ID: &'static str = "relationship_person_1";
+    const RELATIONSHIP_PERSON_2_ID: &'static str = "relationship_person_2";
+    const RELATIONSHIP_PERSON_DATALIST_ID: &'static str = "relationship_person_1_datalist";
+
+    rsx! {
+        for (p1 , neighbors) in relationships.read().iter() {
+            for (p2 , strenght) in neighbors.iter() {
+                p { "{p1} {strenght} {p2}" }
+            }
+        }
+        form {
+            onsubmit: move |event| {
+                let mut data = event.data.values();
+                let person1 = data.remove(RELATIONSHIP_PERSON_1_ID).map(|val| val.as_value());
+                let person2 = data.remove(RELATIONSHIP_PERSON_2_ID).map(|val| val.as_value());
+                let strength = data
+                    .remove(RELATIONSHIP_STRENGTH_ID)
+                    .map(|val| val.as_value())
+                    .and_then(|val| val.parse::<RelationshipStrength>().ok());
+                if let Some(((person1, person2), strength)) = person1.zip(person2).zip(strength)
+                {
+                    relationships
+                        .write()
+                        .entry(person1.clone())
+                        .or_insert_with(HashMap::new)
+                        .entry(person2.clone())
+                        .or_insert(strength);
+                    relationships.write().entry(person2).or_insert_with(HashMap::new);
+                }
+            },
+
+            label { r#for: RELATIONSHIP_PERSON_1_ID, "First Person" }
+            input {
+                id: RELATIONSHIP_PERSON_1_ID,
+                name: RELATIONSHIP_PERSON_1_ID,
+                r#type: "text",
+                list: RELATIONSHIP_PERSON_DATALIST_ID,
+                minlength: 1,
+            }
+            datalist { id: RELATIONSHIP_PERSON_DATALIST_ID,
+                {relationships.read().keys().map(|p| rsx! {
+                    option { value: "{p}" }
+                })}
+            }
+
+            label { r#for: RELATIONSHIP_STRENGTH_ID, "Relationship" }
+            input {
+                id: RELATIONSHIP_STRENGTH_ID,
+                name: RELATIONSHIP_STRENGTH_ID,
+                r#type: "range",
+                list: RELATIONSHIP_STRENGTH_DATALIST_ID,
+                min: 0,
+                max: 3,
+                step: 1,
+                value: 2,
+            }
+            // TODO: labels can be shown with CSS
+            // TODO: Make strenght enum
+            datalist { id: RELATIONSHIP_STRENGTH_DATALIST_ID,
+                option { value: 0, label: "hate" }
+                option { value: 1, label: "dislike" }
+                option { value: 2, label: "like" }
+                option { value: 3, label: "love" }
+            }
+
+            label { r#for: RELATIONSHIP_PERSON_2_ID, "Person 2" }
+            input {
+                id: RELATIONSHIP_PERSON_2_ID,
+                name: RELATIONSHIP_PERSON_2_ID,
+                r#type: "text",
+                list: RELATIONSHIP_PERSON_DATALIST_ID,
+                minlength: 1,
+            }
+
+            button { r#type: "submit", "Add a relationship" }
         }
     }
 }
