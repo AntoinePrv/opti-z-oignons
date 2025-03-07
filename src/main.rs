@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use dioxus::prelude::*;
+use strum::IntoEnumIterator;
 
 const FAVICON: &str = concat!(
     "data:image/svg+xml,",
@@ -10,7 +11,25 @@ const FAVICON: &str = concat!(
 );
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
-type RelationshipStrength = u32;
+#[derive(Clone, Copy, strum::Display, strum::EnumIter, strum::FromRepr)]
+#[strum(serialize_all = "lowercase")]
+enum RelationshipStrength {
+    Hates,
+    Dislikes,
+    Likes,
+    Loves,
+}
+
+impl RelationshipStrength {
+    pub fn min() -> RelationshipStrength {
+        return RelationshipStrength::iter().next().unwrap();
+    }
+
+    pub fn max() -> RelationshipStrength {
+        return RelationshipStrength::iter().next_back().unwrap();
+    }
+}
+
 type PersonId = String;
 type Relationships = HashMap<PersonId, HashMap<PersonId, RelationshipStrength>>;
 
@@ -142,7 +161,8 @@ fn RelationshipInput(relationships: Signal<Relationships>) -> Element {
                 let strength = data
                     .remove(RELATIONSHIP_STRENGTH_ID)
                     .map(|val| val.as_value())
-                    .and_then(|val| val.parse::<RelationshipStrength>().ok());
+                    .and_then(|val| val.parse::<usize>().ok())
+                    .and_then(|val| RelationshipStrength::from_repr(val));
                 if let Some(((person1, person2), strength)) = person1.zip(person2).zip(strength)
                 {
                     relationships
@@ -175,18 +195,16 @@ fn RelationshipInput(relationships: Signal<Relationships>) -> Element {
                 name: RELATIONSHIP_STRENGTH_ID,
                 r#type: "range",
                 list: RELATIONSHIP_STRENGTH_DATALIST_ID,
-                min: 0,
-                max: 3,
+                min: RelationshipStrength::min() as usize,
+                max: RelationshipStrength::max() as usize,
                 step: 1,
-                value: 2,
+                value: RelationshipStrength::max() as usize,
             }
             // TODO: labels can be shown with CSS
-            // TODO: Make strenght enum
             datalist { id: RELATIONSHIP_STRENGTH_DATALIST_ID,
-                option { value: 0, label: "hate" }
-                option { value: 1, label: "dislike" }
-                option { value: 2, label: "like" }
-                option { value: 3, label: "love" }
+                for strength in RelationshipStrength::iter() {
+                    option { value: strength as usize, label: "{strength}" }
+                }
             }
 
             label { r#for: RELATIONSHIP_PERSON_2_ID, "Person 2" }

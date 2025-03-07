@@ -48,6 +48,7 @@ dioxus = ">=0.6.3"
 
 [feature.dev.tasks]
 dx = "dx"
+cargo = "cargo"
 
 [feature.dev.activation.env]
 RUSTC_WRAPPER = "sccache"
