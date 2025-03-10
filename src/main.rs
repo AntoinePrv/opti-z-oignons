@@ -59,20 +59,30 @@ fn Home() -> Element {
     }
 }
 
+fn fmt_table(seats: usize) -> String {
+    let right_cnt = seats / 2;
+    format!(
+        "{}🟡{}",
+        "🪑".repeat(seats - right_cnt),
+        "🪑".repeat(right_cnt)
+    )
+}
+
 #[component]
 fn Schema(relationships: Signal<Relationships>, tables: Signal<Vec<u32>>) -> Element {
+    // TODO add hover for names
     rsx! {
         p { "Tables:" }
         ul {
-            for (i , seats) in tables.iter().enumerate() {
+            for seats in tables.iter() {
                 // TODO Missing key
-                li { "Table {i} ({seats} seats)" }
+                li { "{fmt_table(*seats as usize)}" }
             }
         }
         p { "Persons:" }
         ul {
             for person in relationships.read().keys() {
-                li { key: person, "{person}" }
+                li { key: "{person}", "🐷" }
             }
         }
     }
