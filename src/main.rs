@@ -33,6 +33,13 @@ impl RelationshipStrength {
 type PersonId = String;
 type Relationships = HashMap<PersonId, HashMap<PersonId, RelationshipStrength>>;
 
+#[derive(PartialEq, Eq, Hash)]
+struct TableType {
+    n_seats: usize,
+}
+
+type Tables = HashMap<TableType, usize>;
+
 fn main() {
     dioxus::launch(App);
 }
@@ -48,7 +55,7 @@ fn App() -> Element {
 
 #[component]
 fn Home() -> Element {
-    let tables = use_signal(|| vec![6u32]);
+    let tables = use_signal(Tables::new);
     let relationships = use_signal(Relationships::new);
     rsx! {
         h1 { "Group Assignment" }
@@ -70,13 +77,15 @@ fn fmt_table(seats: usize) -> String {
 }
 
 #[component]
-fn Schema(relationships: Signal<Relationships>, tables: Signal<Vec<u32>>) -> Element {
+fn Schema(relationships: Signal<Relationships>, tables: Signal<Tables>) -> Element {
     // TODO add hover for names
     rsx! {
         ul {
-            for seats in tables.iter() {
+            for (kind , count) in tables.read().iter() {
                 // TODO Missing key
-                li { "{fmt_table(*seats as usize)}" }
+                for _ in 0..*count {
+                    li { "{fmt_table(kind.n_seats)}" }
+                }
             }
         }
         ul {
@@ -159,20 +168,24 @@ fn PersonInput(mut relationships: Signal<Relationships>) -> Element {
 }
 
 #[component]
-fn TableInput(tables: Signal<Vec<u32>>) -> Element {
-    const TABLE_SEATS_ID: &'static str = "n_seats";
+fn TableInput(tables: Signal<Tables>) -> Element {
+    const TABLE_SEATS_ID: &'static str = "table_seats";
+    const TABLE_COUNT_ID: &'static str = "table_count";
 
     rsx! {
         form {
             onsubmit: move |event| {
-                let n_seats_input = event
-                    .data
-                    .values()
+                let mut data = event.data.values();
+                let n_seats_input = data
                     .remove(TABLE_SEATS_ID)
                     .map(|val| val.as_value())
-                    .and_then(|val| val.parse::<u32>().ok());
-                if let Some(n_seats) = n_seats_input {
-                    tables.push(n_seats)
+                    .and_then(|val| val.parse::<usize>().ok());
+                let count_input = data
+                    .remove(TABLE_COUNT_ID)
+                    .map(|val| val.as_value())
+                    .and_then(|val| val.parse::<usize>().ok());
+                if let Some((n_seats, count)) = n_seats_input.zip(count_input) {
+                    *tables.write().entry(TableType { n_seats }).or_insert(0) += count;
                 }
             },
             label { r#for: TABLE_SEATS_ID, "Number of seats" }
@@ -184,7 +197,16 @@ fn TableInput(tables: Signal<Vec<u32>>) -> Element {
                 step: 1,
                 value: 6,
             }
-            button { r#type: "submit", "Add a table" }
+            label { r#for: TABLE_COUNT_ID, "Number of tables" }
+            input {
+                id: TABLE_COUNT_ID,
+                name: TABLE_COUNT_ID,
+                r#type: "number",
+                min: 0,
+                step: 1,
+                value: 1,
+            }
+            button { r#type: "submit", "Add tables" }
         }
     }
 }
