@@ -54,6 +54,7 @@ fn Home() -> Element {
         h1 { "Group Assignment" }
         Schema { tables, relationships }
         TableInput { tables }
+        PersonList { relationships }
         PersonInput { relationships }
         RelationshipInput { relationships }
     }
@@ -72,14 +73,12 @@ fn fmt_table(seats: usize) -> String {
 fn Schema(relationships: Signal<Relationships>, tables: Signal<Vec<u32>>) -> Element {
     // TODO add hover for names
     rsx! {
-        p { "Tables:" }
         ul {
             for seats in tables.iter() {
                 // TODO Missing key
                 li { "{fmt_table(*seats as usize)}" }
             }
         }
-        p { "Persons:" }
         ul {
             for person in relationships.read().keys() {
                 li { key: "{person}", "🐷" }
@@ -89,8 +88,48 @@ fn Schema(relationships: Signal<Relationships>, tables: Signal<Vec<u32>>) -> Ele
 }
 
 #[component]
+fn PersonList(mut relationships: Signal<Relationships>) -> Element {
+    const PERSON_NAME_ID: &'static str = "person_name";
+
+    rsx! {
+        p { "Persons:" }
+        ul {
+            for person in relationships.read().keys() {
+                li { key: "{person}",
+                    form {
+                        onsubmit: move |event| {
+                            let name_input = event
+                                .data
+                                .values()
+                                .remove(PERSON_NAME_ID)
+                                .map(|val| val.as_value());
+                            if let Some(name) = name_input {
+                                for neighbors in relationships.write().values_mut() {
+                                    neighbors.remove(&name);
+                                }
+                                relationships.write().remove(&name);
+                            }
+                        },
+                        label { r#for: PERSON_NAME_ID, "Name" }
+                        input {
+                            id: PERSON_NAME_ID,
+                            name: PERSON_NAME_ID,
+                            readonly: true,
+                            r#type: "text",
+                            minlength: 1,
+                            value: "{person}",
+                        }
+                        button { r#type: "submit", "❌" }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[component]
 fn PersonInput(mut relationships: Signal<Relationships>) -> Element {
-    const PERSON_NAME_ID: &'static str = "name";
+    const PERSON_NAME_ID: &'static str = "person_name";
 
     rsx! {
         // TODO: add "tribe" for auto conflicts
@@ -110,10 +149,11 @@ fn PersonInput(mut relationships: Signal<Relationships>) -> Element {
             input {
                 id: PERSON_NAME_ID,
                 name: PERSON_NAME_ID,
+                placeholder: "Add a person",
                 r#type: "text",
                 minlength: 1,
             }
-            button { r#type: "submit", "Add a person" }
+            button { r#type: "submit", "✔️" }
         }
     }
 }
