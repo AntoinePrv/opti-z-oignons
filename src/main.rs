@@ -99,37 +99,23 @@ fn Schema(relationships: Signal<Relationships>, tables: Signal<Tables>) -> Eleme
 
 #[component]
 fn PersonList(relationships: Signal<Relationships>) -> Element {
-    const PERSON_NAME_ID: &'static str = "person_name";
-
     rsx! {
         p { "Persons:" }
         ul {
             for person in relationships.read().keys() {
                 li { key: "{person}",
-                    form {
-                        onsubmit: move |event| {
-                            let name_input = event
-                                .data
-                                .values()
-                                .remove(PERSON_NAME_ID)
-                                .map(|val| val.as_value());
-                            if let Some(name) = name_input {
+                    p { "{person}" }
+                    button {
+                        onclick: {
+                            let person = person.to_owned();
+                            move |_| {
                                 for neighbors in relationships.write().values_mut() {
-                                    neighbors.remove(&name);
+                                    neighbors.remove(&person);
                                 }
-                                relationships.write().remove(&name);
+                                relationships.write().remove(&person);
                             }
                         },
-                        label { r#for: PERSON_NAME_ID, "Name" }
-                        input {
-                            id: PERSON_NAME_ID,
-                            name: PERSON_NAME_ID,
-                            readonly: true,
-                            r#type: "text",
-                            minlength: 1,
-                            value: "{person}",
-                        }
-                        button { r#type: "submit", "❌" }
+                        "❌"
                     }
                 }
             }
