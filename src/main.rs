@@ -33,7 +33,7 @@ impl RelationshipStrength {
 type PersonId = String;
 type Relationships = HashMap<PersonId, HashMap<PersonId, RelationshipStrength>>;
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct TableType {
     n_seats: usize,
 }
@@ -60,6 +60,7 @@ fn Home() -> Element {
     rsx! {
         h1 { "Group Assignment" }
         Schema { tables, relationships }
+        TableList { tables }
         TableInput { tables }
         PersonList { relationships }
         PersonInput { relationships }
@@ -97,7 +98,7 @@ fn Schema(relationships: Signal<Relationships>, tables: Signal<Tables>) -> Eleme
 }
 
 #[component]
-fn PersonList(mut relationships: Signal<Relationships>) -> Element {
+fn PersonList(relationships: Signal<Relationships>) -> Element {
     const PERSON_NAME_ID: &'static str = "person_name";
 
     rsx! {
@@ -163,6 +164,30 @@ fn PersonInput(mut relationships: Signal<Relationships>) -> Element {
                 minlength: 1,
             }
             button { r#type: "submit", "✔️" }
+        }
+    }
+}
+
+#[component]
+fn TableList(tables: Signal<Tables>) -> Element {
+    rsx! {
+        p { "Tables:" }
+        ul {
+            for (table , count) in tables.read().iter() {
+                // TODO missing key
+                li {
+                    p { "{count} tables with {table.n_seats} seats" }
+                    button {
+                        onclick: {
+                            let table: TableType = table.to_owned();
+                            move |_| {
+                                tables.write().remove(&table);
+                            }
+                        },
+                        "❌"
+                    }
+                }
+            }
         }
     }
 }
