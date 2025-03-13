@@ -64,6 +64,7 @@ fn Home() -> Element {
         TableInput { tables }
         PersonList { relationships }
         PersonInput { relationships }
+        RelationshipList { relationships }
         RelationshipInput { relationships }
     }
 }
@@ -223,6 +224,37 @@ fn TableInput(tables: Signal<Tables>) -> Element {
 }
 
 #[component]
+fn RelationshipList(relationships: Signal<Relationships>) -> Element {
+    rsx! {
+        p { "Relationships:" }
+        ul {
+            for (p1 , neighbors) in relationships.read().iter() {
+                for (p2 , strenght) in neighbors.iter() {
+                    li {
+                        // TODO missing key
+                        p { "{p1} {strenght} {p2}" }
+                        button {
+                            onclick: {
+                                {
+                                    let p1 = p1.to_owned();
+                                    let p2 = p2.to_owned();
+                                    move |_| {
+                                        if let Some(neighbors) = relationships.write().get_mut(&p1) {
+                                            neighbors.remove(&p2);
+                                        }
+                                    }
+                                }
+                            },
+                            "❌"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[component]
 fn RelationshipInput(relationships: Signal<Relationships>) -> Element {
     const RELATIONSHIP_STRENGTH_ID: &'static str = "relationship_strength";
     const RELATIONSHIP_STRENGTH_DATALIST_ID: &'static str = "relationship_strength_datalist";
@@ -230,12 +262,8 @@ fn RelationshipInput(relationships: Signal<Relationships>) -> Element {
     const RELATIONSHIP_PERSON_2_ID: &'static str = "relationship_person_2";
     const RELATIONSHIP_PERSON_DATALIST_ID: &'static str = "relationship_person_1_datalist";
 
+    // TODO relationship invariant should be more properly handled
     rsx! {
-        for (p1 , neighbors) in relationships.read().iter() {
-            for (p2 , strenght) in neighbors.iter() {
-                p { "{p1} {strenght} {p2}" }
-            }
-        }
         form {
             onsubmit: move |event| {
                 let mut data = event.data.values();
