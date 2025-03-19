@@ -46,15 +46,55 @@ fn main() {
 
 #[component]
 fn App() -> Element {
+    // TODO use context to manage state
+    // use_context_provider(|| ProblemDefinition));
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        Home {}
+        Router::<Route> {}
+    }
+}
+
+#[derive(Routable, PartialEq, Clone)]
+enum Route {
+    #[layout(NavBar)]
+    #[route("/problem")]
+    #[redirect("/", || Route::ProblemPage {})]
+    ProblemPage {},
+    #[route("/solution")]
+    SolutionPage {},
+    #[end_layout]
+    #[route("/:..segments")]
+    NotFound { segments: Vec<String> },
+}
+
+#[component]
+pub fn NavBar() -> Element {
+    rsx! {
+        nav {
+            ul {
+                li {
+                    Link { to: Route::ProblemPage {}, "Problem" }
+                }
+                li {
+                    Link { to: Route::SolutionPage {}, "Solution" }
+                }
+            }
+        }
+        Outlet::<Route> {}
     }
 }
 
 #[component]
-fn Home() -> Element {
+fn NotFound(segments: Vec<String>) -> Element {
+    let route = segments.join("/");
+    rsx! {
+        p { "Page not found /{route}" }
+    }
+}
+
+#[component]
+fn ProblemPage() -> Element {
     let tables = use_signal(Tables::new);
     let relationships = use_signal(Relationships::new);
     rsx! {
@@ -66,6 +106,13 @@ fn Home() -> Element {
         PersonInput { relationships }
         RelationshipList { relationships }
         RelationshipInput { relationships }
+    }
+}
+
+#[component]
+fn SolutionPage() -> Element {
+    rsx! {
+        p { "Hello Solution!" }
     }
 }
 
