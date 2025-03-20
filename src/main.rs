@@ -15,6 +15,21 @@ const FAVICON: &str = concat!(
 );
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
+#[derive(Clone)]
+struct ProblemSignal {
+    pub tables: Signal<logic::Tables>,
+    pub tribe: Signal<logic::Tribe>,
+}
+
+impl ProblemSignal {
+    pub fn new() -> Self {
+        Self {
+            tables: Signal::new(logic::Tables::new()),
+            tribe: Signal::new(logic::Tribe::new()),
+        }
+    }
+}
+
 #[derive(Routable, PartialEq, Clone)]
 enum Route {
     #[layout(app::Layout)]
@@ -30,8 +45,7 @@ enum Route {
 
 #[component]
 fn App() -> Element {
-    // TODO use context to manage state
-    // use_context_provider(|| ProblemDefinition));
+    use_context_provider(ProblemSignal::new);
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
