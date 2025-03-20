@@ -49,6 +49,10 @@ impl Tribe {
         self.directed_relations.remove(name);
     }
 
+    pub fn persons_count(&self) -> usize {
+        self.directed_relations.len()
+    }
+
     pub fn persons(&self) -> impl Iterator<Item = &PersonName> {
         self.directed_relations.keys()
     }
