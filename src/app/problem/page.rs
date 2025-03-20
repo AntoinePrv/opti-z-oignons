@@ -1,112 +1,20 @@
-use std::collections::HashMap;
-
 use dioxus::prelude::*;
-use strum::IntoEnumIterator;
 
-#[derive(Clone, Copy, strum::Display, strum::EnumIter, strum::FromRepr)]
-#[strum(serialize_all = "lowercase")]
-pub enum RelationStrength {
-    Hates,
-    Dislikes,
-    Likes,
-    Loves,
-}
-
-impl RelationStrength {
-    pub fn min() -> Self {
-        return Self::iter().next().unwrap();
-    }
-
-    pub fn max() -> Self {
-        return Self::iter().next_back().unwrap();
-    }
-}
-
-type PersonName = String;
-type PersonNameRef = str;
-type PersonId = PersonName;
-
-pub struct Tribe {
-    directed_relations: HashMap<PersonId, HashMap<PersonId, RelationStrength>>,
-}
-
-impl Tribe {
-    pub fn new() -> Self {
-        Self {
-            directed_relations: HashMap::new(),
-        }
-    }
-
-    pub fn add_person(&mut self, name: PersonName) {
-        self.directed_relations.insert(name, HashMap::new());
-    }
-
-    pub fn remove_person(&mut self, name: &PersonNameRef) {
-        for neighbors in self.directed_relations.values_mut() {
-            neighbors.remove(name);
-        }
-        self.directed_relations.remove(name);
-    }
-
-    pub fn persons(&self) -> impl Iterator<Item = &PersonName> {
-        self.directed_relations.keys()
-    }
-
-    pub fn add_relation(
-        &mut self,
-        name1: impl Into<PersonName>,
-        name2: impl Into<PersonName>,
-        strength: RelationStrength,
-    ) {
-        let name2 = name2.into();
-        self.directed_relations
-            .entry(name2.clone())
-            .or_insert_with(HashMap::new);
-        self.directed_relations
-            .entry(name1.into())
-            .or_insert_with(HashMap::new)
-            .entry(name2)
-            .or_insert(strength);
-    }
-
-    pub fn remove_relation(&mut self, name1: &PersonNameRef, name2: &PersonNameRef) {
-        if let Some(neighbors) = self.directed_relations.get_mut(name1) {
-            neighbors.remove(name2);
-        }
-    }
-
-    pub fn relations(&self) -> impl Iterator<Item = (&PersonName, &PersonName, RelationStrength)> {
-        self.directed_relations
-            .iter()
-            .map(|(p1, neighbors)| {
-                neighbors
-                    .iter()
-                    .map(move |(p2, strength)| (p1, p2, *strength))
-            })
-            .flatten()
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-struct TableType {
-    n_seats: usize,
-}
-
-type Tables = HashMap<TableType, usize>;
+use crate::logic::{RelationStrength, TableType, Tables, Tribe};
 
 #[component]
 pub fn Page() -> Element {
     let tables = use_signal(Tables::new);
-    let relations = use_signal(Tribe::new);
+    let tribe = use_signal(Tribe::new);
     rsx! {
         h1 { "Group Assignment" }
-        Schema { tables, relations }
+        Schema { tables, tribe }
         TableList { tables }
         TableInput { tables }
-        PersonList { relations }
-        PersonInput { relations }
-        RelationList { relations }
-        RelationInput { relations }
+        PersonList { tribe }
+        PersonInput { tribe }
+        RelationList { tribe }
+        RelationInput { tribe }
     }
 }
 
@@ -120,7 +28,7 @@ fn fmt_table(seats: usize) -> String {
 }
 
 #[component]
-fn Schema(relations: Signal<Tribe>, tables: Signal<Tables>) -> Element {
+fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
     // TODO add hover for names
     rsx! {
         ul {
@@ -132,7 +40,7 @@ fn Schema(relations: Signal<Tribe>, tables: Signal<Tables>) -> Element {
             }
         }
         ul {
-            for person in relations.read().persons() {
+            for person in tribe.read().persons() {
                 li { key: "{person}", "🐷" }
             }
         }
@@ -140,18 +48,18 @@ fn Schema(relations: Signal<Tribe>, tables: Signal<Tables>) -> Element {
 }
 
 #[component]
-fn PersonList(relations: Signal<Tribe>) -> Element {
+fn PersonList(tribe: Signal<Tribe>) -> Element {
     rsx! {
         p { "Persons:" }
         ul {
-            for person in relations.read().persons() {
+            for person in tribe.read().persons() {
                 li { key: "{person}",
                     p { "{person}" }
                     button {
                         onclick: {
                             let person = person.to_owned();
                             move |_| {
-                                relations.write().remove_person(&person);
+                                tribe.write().remove_person(&person);
                             }
                         },
                         "❌"
@@ -163,7 +71,7 @@ fn PersonList(relations: Signal<Tribe>) -> Element {
 }
 
 #[component]
-fn PersonInput(mut relations: Signal<Tribe>) -> Element {
+fn PersonInput(tribe: Signal<Tribe>) -> Element {
     const PERSON_NAME_ID: &'static str = "person_name";
 
     rsx! {
@@ -177,7 +85,7 @@ fn PersonInput(mut relations: Signal<Tribe>) -> Element {
                     .remove(PERSON_NAME_ID)
                     .map(|val| val.as_value());
                 if let Some(name) = name_input {
-                    relations.write().add_person(name);
+                    tribe.write().add_person(name);
                 }
             },
             label { r#for: PERSON_NAME_ID, "Name" }
@@ -262,11 +170,11 @@ fn TableInput(tables: Signal<Tables>) -> Element {
 }
 
 #[component]
-fn RelationList(relations: Signal<Tribe>) -> Element {
+fn RelationList(tribe: Signal<Tribe>) -> Element {
     rsx! {
         p { "Relations:" }
         ul {
-            for (p1 , p2 , strenght) in relations.read().relations() {
+            for (p1 , p2 , strenght) in tribe.read().relations() {
                 li {
                     // TODO missing key
                     p { "{p1} {strenght} {p2}" }
@@ -276,7 +184,7 @@ fn RelationList(relations: Signal<Tribe>) -> Element {
                                 let p1 = p1.to_owned();
                                 let p2 = p2.to_owned();
                                 move |_| {
-                                    relations.write().remove_relation(&p1, &p2);
+                                    tribe.write().remove_relation(&p1, &p2);
                                 }
                             }
                         },
@@ -289,14 +197,13 @@ fn RelationList(relations: Signal<Tribe>) -> Element {
 }
 
 #[component]
-fn RelationInput(relations: Signal<Tribe>) -> Element {
+fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
     const RELATION_STRENGTH_ID: &'static str = "relation_strength";
     const RELATION_STRENGTH_DATALIST_ID: &'static str = "relation_strength_datalist";
     const RELATION_PERSON_1_ID: &'static str = "relation_person_1";
     const RELATION_PERSON_2_ID: &'static str = "relation_person_2";
-    const RELATION_PERSON_DATALIST_ID: &'static str = "relation_person_1_datalist";
+    const RELATION_PERSON_DATALIST_ID: &'static str = "relation_person_datalist";
 
-    // TODO relation invariant should be more properly handled
     rsx! {
         form {
             onsubmit: move |event| {
@@ -310,7 +217,7 @@ fn RelationInput(relations: Signal<Tribe>) -> Element {
                     .and_then(|val| RelationStrength::from_repr(val));
                 if let Some(((person1, person2), strength)) = person1.zip(person2).zip(strength)
                 {
-                    relations.write().add_relation(person1, person2, strength);
+                    tribe.write().add_relation(person1, person2, strength);
                 }
             },
 
@@ -323,7 +230,7 @@ fn RelationInput(relations: Signal<Tribe>) -> Element {
                 minlength: 1,
             }
             datalist { id: RELATION_PERSON_DATALIST_ID,
-                {relations.read().persons().map(|p| rsx! {
+                {tribe.read().persons().map(|p| rsx! {
                     option { value: "{p}" }
                 })}
             }

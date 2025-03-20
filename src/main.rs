@@ -1,4 +1,5 @@
 pub mod app;
+pub mod logic;
 
 use dioxus::prelude::*;
 
