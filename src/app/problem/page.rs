@@ -4,17 +4,17 @@ use crate::logic::{RelationStrength, TableType, Tables, Tribe};
 
 #[component]
 pub fn Page() -> Element {
-    let ctx: crate::ProblemSignal = use_context();
+    let pb: crate::ProblemSignal = use_context();
 
     rsx! {
         h1 { "Group Assignment" }
-        Schema { tables: ctx.tables, tribe: ctx.tribe }
-        TableList { tables: ctx.tables }
-        TableInput { tables: ctx.tables }
-        PersonList { tribe: ctx.tribe }
-        PersonInput { tribe: ctx.tribe }
-        RelationList { tribe: ctx.tribe }
-        RelationInput { tribe: ctx.tribe }
+        Schema { tables: pb.tables, tribe: pb.tribe }
+        TableList { tables: pb.tables }
+        TableInput { tables: pb.tables }
+        PersonList { tribe: pb.tribe }
+        PersonInput { tribe: pb.tribe }
+        RelationList { tribe: pb.tribe }
+        RelationInput { tribe: pb.tribe }
     }
 }
 
