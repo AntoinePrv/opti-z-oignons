@@ -15,6 +15,6 @@ pub fn Layout() -> Element {
                 }
             }
         }
-        Outlet::<Route> {}
+        main { Outlet::<Route> {} }
     }
 }
