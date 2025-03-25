@@ -98,3 +98,23 @@ pub struct TableType {
 }
 
 pub type Tables = HashMap<TableType, usize>;
+
+pub type Assignment = Vec<Vec<PersonName>>;
+
+pub type UnsolvableError = String;
+
+pub fn fake_solve(tables: &Tables, tribe: &Tribe) -> Result<Assignment, UnsolvableError> {
+    let mut out = Assignment::new();
+    let mut persons = tribe.persons();
+    for (table, count) in tables.iter() {
+        for _ in 0..*count {
+            out.push(persons.by_ref().take(table.n_seats).cloned().collect());
+        }
+    }
+
+    if persons.next().is_some() {
+        Err("There is not enough sitting space".to_owned())
+    } else {
+        Ok(out)
+    }
+}

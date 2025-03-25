@@ -1,9 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::logic::{PersonName, Tables, Tribe};
-
-type Assignment = Vec<Vec<PersonName>>;
-type UnsolvableError = String;
+use crate::logic::{self, Assignment, UnsolvableError};
 
 #[component]
 pub fn Page() -> Element {
@@ -21,7 +18,7 @@ pub fn Page() -> Element {
         }
         button {
             onclick: move |_| {
-                match fake_solve(&pb.tables.read(), &pb.tribe.read()) {
+                match logic::fake_solve(&pb.tables.read(), &pb.tribe.read()) {
                     Ok(a) => {
                         assignment.set(Some(a));
                         error.set(None);
@@ -32,22 +29,6 @@ pub fn Page() -> Element {
             "Solve"
         }
         AssignmentList { assignment }
-    }
-}
-
-fn fake_solve(tables: &Tables, tribe: &Tribe) -> Result<Assignment, UnsolvableError> {
-    let mut out = Assignment::new();
-    let mut persons = tribe.persons();
-    for (table, count) in tables.iter() {
-        for _ in 0..*count {
-            out.push(persons.by_ref().take(table.n_seats).cloned().collect());
-        }
-    }
-
-    if persons.next().is_some() {
-        Err("There is not enough sitting space".to_owned())
-    } else {
-        Ok(out)
     }
 }
 
