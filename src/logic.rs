@@ -38,8 +38,8 @@ impl Tribe {
         }
     }
 
-    pub fn add_person(&mut self, name: PersonName) {
-        self.directed_relations.insert(name, HashMap::new());
+    pub fn add_person(&mut self, name: impl Into<PersonName>) {
+        self.directed_relations.insert(name.into(), HashMap::new());
     }
 
     pub fn remove_person(&mut self, name: &PersonNameRef) {
@@ -116,5 +116,42 @@ pub fn fake_solve(tables: &Tables, tribe: &Tribe) -> Result<Assignment, Unsolvab
         Err("There is not enough sitting space".to_owned())
     } else {
         Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use super::*;
+
+    #[test]
+    fn test_tribe() {
+        let mut tribe = Tribe::new();
+        assert_eq!(tribe.persons_count(), 0);
+        assert_eq!(tribe.persons().count(), 0);
+        assert_eq!(tribe.relations().count(), 0);
+
+        tribe.add_person("Antoine");
+        assert_eq!(tribe.persons_count(), 1);
+        assert_eq!(tribe.persons().collect::<Vec<_>>(), vec!["Antoine"]);
+        assert_eq!(tribe.relations().count(), 0);
+
+        tribe.add_person("Mathieu");
+        assert_eq!(tribe.persons_count(), 2);
+        assert_eq!(
+            tribe.persons().map(AsRef::as_ref).collect::<HashSet<_>>(),
+            HashSet::from(["Antoine", "Mathieu"]),
+        );
+        assert_eq!(tribe.relations().count(), 0);
+
+        tribe.add_relation("Antoine", "Mathieu", RelationStrength::Likes);
+        tribe.add_relation("Antoine", "Charles", RelationStrength::Dislikes);
+        assert_eq!(tribe.persons_count(), 3);
+        assert_eq!(
+            tribe.persons().map(AsRef::as_ref).collect::<HashSet<_>>(),
+            HashSet::from(["Charles", "Antoine", "Mathieu"]),
+        );
+        assert_eq!(tribe.relations().count(), 0);
     }
 }
