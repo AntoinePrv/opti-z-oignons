@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
-use crate::logic::{self, Assignment, UnsolvableError};
+use crate::{
+    logic::{self, Assignment, UnsolvableError},
+    SolutionState,
+};
 
 #[component]
 pub fn Page() -> Element {
@@ -8,29 +11,57 @@ pub fn Page() -> Element {
     let mut solution: crate::SolutionSignal = use_context();
 
     rsx! {
-        if let Err(err) = &(*solution.assignment.read()) {
-            p { "{err}" }
-        }
+        SolveText { outdated: *solution.outdated.read() }
         button {
             onclick: move |_| {
                 solution.assignment.set(logic::fake_solve(&pb.tables.read(), &pb.tribe.read()));
+                solution.outdated.set(SolutionState::Valid);
             },
-            "Solve"
+            disabled: solve_disabled(*solution.outdated.read()),
+            "{solve_text(*solution.outdated.read())}"
         }
-        AssignmentList { solution: solution.assignment }
+        AssignmentList { assignment: solution.assignment }
     }
 }
 
 #[component]
-fn AssignmentList(solution: Signal<Result<Assignment, UnsolvableError>>) -> Element {
-    if solution.read().is_err() {
-        return rsx!();
+fn SolveText(outdated: SolutionState) -> Element {
+    rsx!(
+        if outdated == SolutionState::Missing {
+            p { "There is no ongoing solution" }
+        }
+        if outdated == SolutionState::Outdated {
+            // TODO Warning style
+            p { "The problem has changed since the last solution" }
+        }
+    )
+}
+
+fn solve_text(state: SolutionState) -> &'static str {
+    match state {
+        SolutionState::Missing => "Solve",
+        SolutionState::Outdated => "Solve again",
+        SolutionState::Valid => "Up to date",
+    }
+}
+
+fn solve_disabled(state: SolutionState) -> bool {
+    state == SolutionState::Valid
+}
+
+#[component]
+fn AssignmentList(assignment: Signal<Result<Assignment, UnsolvableError>>) -> Element {
+    if let Err(err) = &(*assignment.read()) {
+        return rsx!(
+            p { "{err}" }
+        );
     }
 
     rsx! {
+
         p { "Table assignment:" }
         ul {
-            for (i , group) in solution.read().as_ref().unwrap().iter().enumerate() {
+            for (i , group) in assignment.read().as_ref().unwrap().iter().enumerate() {
                 li {
                     p { "Table {i}:" }
                     ul {

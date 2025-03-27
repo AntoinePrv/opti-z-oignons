@@ -33,12 +33,21 @@ impl ProblemSignal {
 #[derive(Clone)]
 struct SolutionSignal {
     pub assignment: Signal<Result<logic::Assignment, logic::UnsolvableError>>,
+    pub outdated: Signal<SolutionState>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SolutionState {
+    Missing,
+    Outdated,
+    Valid,
 }
 
 impl SolutionSignal {
     pub fn new() -> Self {
         Self {
             assignment: Signal::new(Err("There is no solution".into())),
+            outdated: Signal::new(SolutionState::Missing),
         }
     }
 }
@@ -58,8 +67,18 @@ enum Route {
 
 #[component]
 fn App() -> Element {
-    use_context_provider(ProblemSignal::new);
-    use_context_provider(SolutionSignal::new);
+    let pb = use_context_provider(ProblemSignal::new);
+    let mut sol = use_context_provider(SolutionSignal::new);
+
+    // FIXME so much for encapsulation but could not manage to make it run in `new`.
+    // Perhaps using a custom hook?
+    use_effect(move || {
+        let _r1 = &pb.tribe.read();
+        let _r2 = &pb.tables.read();
+        if *sol.outdated.peek() != SolutionState::Missing {
+            sol.outdated.set(SolutionState::Outdated);
+        }
+    });
 
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
