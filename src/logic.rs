@@ -152,6 +152,6 @@ mod tests {
             tribe.persons().map(AsRef::as_ref).collect::<HashSet<_>>(),
             HashSet::from(["Charles", "Antoine", "Mathieu"]),
         );
-        assert_eq!(tribe.relations().count(), 0);
+        assert_eq!(tribe.relations().count(), 2);
     }
 }

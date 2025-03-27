@@ -1,5 +1,6 @@
 pub mod app;
 pub mod logic;
+pub mod name_generator;
 
 use dioxus::prelude::*;
 
