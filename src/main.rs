@@ -30,6 +30,19 @@ impl ProblemSignal {
     }
 }
 
+#[derive(Clone)]
+struct SolutionSignal {
+    pub assignment: Signal<Result<logic::Assignment, logic::UnsolvableError>>,
+}
+
+impl SolutionSignal {
+    pub fn new() -> Self {
+        Self {
+            assignment: Signal::new(Err("There is no solution".into())),
+        }
+    }
+}
+
 #[derive(Routable, PartialEq, Clone)]
 enum Route {
     #[layout(app::Layout)]
@@ -46,6 +59,8 @@ enum Route {
 #[component]
 fn App() -> Element {
     use_context_provider(ProblemSignal::new);
+    use_context_provider(SolutionSignal::new);
+
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
