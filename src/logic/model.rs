@@ -105,25 +105,6 @@ pub type Tables = BTreeMap<TableName, TableType>;
 
 pub type Assignment = BTreeMap<TableName, Vec<PersonName>>;
 
-pub type UnsolvableError = String;
-
-pub fn fake_solve(tables: &Tables, tribe: &Tribe) -> Result<Assignment, UnsolvableError> {
-    let mut out = Assignment::new();
-    let mut persons = tribe.persons();
-    for (name, kind) in tables.iter() {
-        out.insert(
-            name.clone(),
-            persons.by_ref().take(kind.n_seats).cloned().collect(),
-        );
-    }
-
-    if persons.next().is_some() {
-        Err("There is not enough sitting space".to_owned())
-    } else {
-        Ok(out)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;

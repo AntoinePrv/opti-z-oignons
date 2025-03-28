@@ -7,6 +7,10 @@ use dioxus::prelude::*;
 use app::problem::Page as ProblemPage;
 use app::solution::Page as SolutionPage;
 use app::NotFound;
+use logic::{
+    model::{Assignment, Tables, Tribe},
+    solver::UnsolvableError,
+};
 
 const FAVICON: &str = concat!(
     "data:image/svg+xml,",
@@ -18,22 +22,22 @@ const MAIN_CSS: Asset = asset!("/assets/main.css");
 
 #[derive(Clone)]
 struct ProblemSignal {
-    pub tables: Signal<logic::Tables>,
-    pub tribe: Signal<logic::Tribe>,
+    pub tables: Signal<Tables>,
+    pub tribe: Signal<Tribe>,
 }
 
 impl ProblemSignal {
     pub fn new() -> Self {
         Self {
-            tables: Signal::new(logic::Tables::new()),
-            tribe: Signal::new(logic::Tribe::new()),
+            tables: Signal::new(Tables::new()),
+            tribe: Signal::new(Tribe::new()),
         }
     }
 }
 
 #[derive(Clone)]
 struct SolutionSignal {
-    pub assignment: Signal<Result<logic::Assignment, logic::UnsolvableError>>,
+    pub assignment: Signal<Result<Assignment, UnsolvableError>>,
     pub outdated: Signal<SolutionState>,
 }
 

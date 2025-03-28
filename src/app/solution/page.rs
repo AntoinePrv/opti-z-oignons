@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::{
-    logic::{self, Assignment, UnsolvableError},
+    logic::{model::Assignment, solver::UnsolvableError},
     SolutionState,
 };
 
@@ -14,7 +14,9 @@ pub fn Page() -> Element {
         SolveText { outdated: *solution.outdated.read() }
         button {
             onclick: move |_| {
-                solution.assignment.set(logic::fake_solve(&pb.tables.read(), &pb.tribe.read()));
+                solution
+                    .assignment
+                    .set(crate::logic::solver::fake_solve(&pb.tables.read(), &pb.tribe.read()));
                 solution.outdated.set(SolutionState::Valid);
             },
             disabled: solve_disabled(*solution.outdated.read()),

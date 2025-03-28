@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::logic::{RelationStrength, TableType, Tables, Tribe};
+use crate::logic::model::{RelationStrength, TableType, Tables, Tribe};
 
 #[component]
 pub fn Page() -> Element {
