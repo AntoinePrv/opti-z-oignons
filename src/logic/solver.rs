@@ -11,7 +11,7 @@ pub fn fake_solve(
     for (name, kind) in tables.iter() {
         out.insert(
             name.clone(),
-            persons.by_ref().take(kind.n_seats).cloned().collect(),
+            persons.by_ref().take(kind.n_seats as usize).cloned().collect(),
         );
     }
 

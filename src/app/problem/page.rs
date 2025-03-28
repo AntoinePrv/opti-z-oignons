@@ -18,12 +18,12 @@ pub fn Page() -> Element {
     }
 }
 
-fn fmt_table(seats: usize) -> String {
+fn fmt_table(seats: u32) -> String {
     let right_cnt = seats / 2;
     format!(
         "{}🟡{}",
-        "🪑".repeat(seats - right_cnt),
-        "🪑".repeat(right_cnt)
+        "🪑".repeat((seats - right_cnt) as usize),
+        "🪑".repeat(right_cnt as usize)
     )
 }
 
@@ -135,7 +135,7 @@ fn TableInput(tables: Signal<Tables>) -> Element {
                 let n_seats_input = data
                     .remove(TABLE_SEATS_ID)
                     .map(|val| val.as_value())
-                    .and_then(|val| val.parse::<usize>().ok());
+                    .and_then(|val| val.parse::<u32>().ok());
                 let count_input = data
                     .remove(TABLE_COUNT_ID)
                     .map(|val| val.as_value())

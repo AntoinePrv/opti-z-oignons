@@ -25,10 +25,9 @@ impl RelationStrength {
 
 pub type PersonName = String;
 pub type PersonNameRef = str;
-pub type PersonId = PersonName;
 
 pub struct Tribe {
-    directed_relations: BTreeMap<PersonId, HashMap<PersonId, RelationStrength>>,
+    directed_relations: BTreeMap<PersonName, HashMap<PersonName, RelationStrength>>,
 }
 
 impl Tribe {
@@ -94,12 +93,11 @@ impl Tribe {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TableType {
-    pub n_seats: usize,
+    pub n_seats: u32,
 }
 
 pub type TableName = String;
 pub type TableNameRef = str;
-pub type TableId = TableName;
 
 pub type Tables = BTreeMap<TableName, TableType>;
 
