@@ -58,12 +58,11 @@ fn AssignmentList(assignment: Signal<Result<Assignment, UnsolvableError>>) -> El
     }
 
     rsx! {
-
         p { "Table assignment:" }
         ul {
-            for (i , group) in assignment.read().as_ref().unwrap().iter().enumerate() {
+            for (table_name , group) in assignment.read().as_ref().unwrap().iter() {
                 li {
-                    p { "Table {i}:" }
+                    p { "Table {table_name}:" }
                     ul {
                         for person in group {
                             li { key: person, "{person}" }

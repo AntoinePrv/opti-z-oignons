@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Clone, Copy, strum::Display, strum::EnumIter, strum::FromRepr)]
 #[strum(serialize_all = "lowercase")]
@@ -28,13 +28,13 @@ pub type PersonNameRef = str;
 pub type PersonId = PersonName;
 
 pub struct Tribe {
-    directed_relations: HashMap<PersonId, HashMap<PersonId, RelationStrength>>,
+    directed_relations: BTreeMap<PersonId, HashMap<PersonId, RelationStrength>>,
 }
 
 impl Tribe {
     pub fn new() -> Self {
         Self {
-            directed_relations: HashMap::new(),
+            directed_relations: BTreeMap::new(),
         }
     }
 
@@ -97,19 +97,24 @@ pub struct TableType {
     pub n_seats: usize,
 }
 
-pub type Tables = HashMap<TableType, usize>;
+pub type TableName = String;
+pub type TableNameRef = str;
+pub type TableId = TableName;
 
-pub type Assignment = Vec<Vec<PersonName>>;
+pub type Tables = BTreeMap<TableName, TableType>;
+
+pub type Assignment = BTreeMap<TableName, Vec<PersonName>>;
 
 pub type UnsolvableError = String;
 
 pub fn fake_solve(tables: &Tables, tribe: &Tribe) -> Result<Assignment, UnsolvableError> {
     let mut out = Assignment::new();
     let mut persons = tribe.persons();
-    for (table, count) in tables.iter() {
-        for _ in 0..*count {
-            out.push(persons.by_ref().take(table.n_seats).cloned().collect());
-        }
+    for (name, kind) in tables.iter() {
+        out.insert(
+            name.clone(),
+            persons.by_ref().take(kind.n_seats).cloned().collect(),
+        );
     }
 
     if persons.next().is_some() {

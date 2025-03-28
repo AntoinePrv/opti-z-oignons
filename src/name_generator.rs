@@ -12,7 +12,7 @@ impl Iterator for NameGenerator {
     type Item = String;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let out = Some(format!("Table {}", self.current));
+        let out = Some(self.current.to_string());
         self.current += 1;
         out
     }

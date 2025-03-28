@@ -70,6 +70,7 @@ enum Route {
 fn App() -> Element {
     let pb = use_context_provider(ProblemSignal::new);
     let mut sol = use_context_provider(SolutionSignal::new);
+    use_context_provider(|| Signal::new(name_generator::NameGenerator::new()));
 
     // FIXME so much for encapsulation but could not manage to make it run in `new`.
     // Perhaps using a custom hook?

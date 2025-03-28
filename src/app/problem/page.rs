@@ -32,11 +32,8 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
     // TODO add hover for names
     rsx! {
         ul {
-            for (kind , count) in tables.read().iter() {
-                // TODO Missing key
-                for _ in 0..*count {
-                    li { "{fmt_table(kind.n_seats)}" }
-                }
+            for (_name , kind) in tables.read().iter() {
+                li { key: _name, "{fmt_table(kind.n_seats)}" }
             }
         }
         ul {
@@ -106,15 +103,14 @@ fn TableList(tables: Signal<Tables>) -> Element {
     rsx! {
         p { "Tables:" }
         ul {
-            for (table , count) in tables.read().iter() {
-                // TODO missing key
-                li {
-                    p { "{count} tables with {table.n_seats} seats" }
+            for (name , table) in tables.read().iter() {
+                li { key: name,
+                    p { "Table {name} with {table.n_seats} seats" }
                     button {
                         onclick: {
-                            let table: TableType = table.to_owned();
+                            let name = name.to_owned();
                             move |_| {
-                                tables.write().remove(&table);
+                                tables.write().remove(&name);
                             }
                         },
                         "❌"
@@ -130,6 +126,8 @@ fn TableInput(tables: Signal<Tables>) -> Element {
     const TABLE_SEATS_ID: &'static str = "table_seats";
     const TABLE_COUNT_ID: &'static str = "table_count";
 
+    let mut name_generator: Signal<crate::name_generator::NameGenerator> = use_context();
+
     rsx! {
         form {
             onsubmit: move |event| {
@@ -143,7 +141,10 @@ fn TableInput(tables: Signal<Tables>) -> Element {
                     .map(|val| val.as_value())
                     .and_then(|val| val.parse::<usize>().ok());
                 if let Some((n_seats, count)) = n_seats_input.zip(count_input) {
-                    *tables.write().entry(TableType { n_seats }).or_insert(0) += count;
+                    for _ in 0..count {
+                        let name = name_generator.write().next().unwrap();
+                        tables.write().insert(name, TableType { n_seats });
+                    }
                 }
             },
             label { r#for: TABLE_SEATS_ID, "Number of seats" }
