@@ -16,7 +16,7 @@ pub fn Page() -> Element {
             onclick: move |_| {
                 solution
                     .assignment
-                    .set(crate::logic::solver::fake_solve(&pb.tables.read(), &pb.tribe.read()));
+                    .set(crate::logic::solver::solve(&pb.tables.read(), &pb.tribe.read()));
                 solution.outdated.set(SolutionState::Valid);
             },
             disabled: solve_disabled(*solution.outdated.read()),
