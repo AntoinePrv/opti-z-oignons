@@ -9,12 +9,29 @@ pub fn Page() -> Element {
     rsx! {
         h1 { "Group Assignment" }
         Schema { tables: pb.tables, tribe: pb.tribe }
+        ShowMeHow { tables: pb.tables, tribe: pb.tribe }
         TableList { tables: pb.tables }
         TableInput { tables: pb.tables }
         PersonList { tribe: pb.tribe }
         PersonInput { tribe: pb.tribe }
         RelationList { tribe: pb.tribe }
         RelationInput { tribe: pb.tribe }
+    }
+}
+
+#[component]
+fn ShowMeHow(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
+    rsx! {
+        button {
+            onclick: {
+                move |_| {
+                    let (ex_tribe, ex_tables) = crate::logic::examples::harry_potter();
+                    tribe.set(ex_tribe);
+                    tables.set(ex_tables);
+                }
+            },
+            "Show me how!"
+        }
     }
 }
 
