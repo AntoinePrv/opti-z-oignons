@@ -1,12 +1,21 @@
 use super::model;
 
-pub type UnsolvableError = String;
+use thiserror::Error;
 
-pub fn solve(
-    tables: &model::Tables,
-    tribe: &model::Tribe,
-) -> Result<model::Assignment, UnsolvableError> {
-    let mut solver = Solver::new(tables, tribe);
+#[derive(Error, Debug)]
+pub enum SolverError {
+    #[error("the problem is too large, {0} (max {max})", max=Size::MAX)]
+    ProblemTooLarge(String),
+    #[error("no solution could be found, {0}")]
+    NoSolution(String),
+    #[error("unknown error")]
+    Unknown,
+}
+
+pub type SolverResult<T> = Result<T, SolverError>;
+
+pub fn solve(tables: &model::Tables, tribe: &model::Tribe) -> SolverResult<model::Assignment> {
+    let mut solver = Solver::new(tables, tribe)?;
     solver.fake_solve()
 }
 
@@ -127,29 +136,40 @@ struct Solver<'a> {
 }
 
 impl<'a> Solver<'a> {
-    pub fn new(tables: &'a model::Tables, tribe: &'a model::Tribe) -> Self {
-        // TODO check #persons #seats < u32::MAX
+    pub fn new(tables: &'a model::Tables, tribe: &'a model::Tribe) -> SolverResult<Self> {
+        if tables.len() >= (Size::MAX as usize) {
+            return Err(SolverError::ProblemTooLarge(
+                "there are too many tables".into(),
+            ));
+        }
+        if tribe.persons_count() >= (Size::MAX as usize) {
+            return Err(SolverError::ProblemTooLarge(
+                "there are too many persons".into(),
+            ));
+        }
 
-        let mut table_names = Vec::</* TableIdx, */ &'a model::TableNameRef>::new();
-        table_names.reserve(tables.len());
-        let mut table_sizes = Vec::</* TableIdx, */ SeatIdx>::new();
-        table_sizes.reserve(tables.len() + 1);
+        let (mut table_names, mut table_sizes): (Vec<&'a model::TableNameRef>, Vec<Size>) = tables
+            .iter()
+            .map(|(name, typ)| (name.as_str(), typ.n_seats))
+            .unzip();
 
-        for (name, table) in tables.iter() {
-            table_names.push(name.as_ref());
-            table_sizes.push(table.n_seats);
+        let n_seats = table_sizes
+            .iter()
+            .try_fold(0u32, |acc, &x| acc.checked_add(x));
+        if n_seats.is_none() {
+            return Err(SolverError::ProblemTooLarge("there are too seats".into()));
         }
 
         table_names.sort_unstable_by_key(|n| tables.get(*n).unwrap().n_seats);
         table_sizes.sort();
 
-        Self {
+        Ok(Self {
             assignor: Assignor::from_table_sizes(table_sizes, tribe.persons_count() as Size),
             mapping: BackwardMapping::new(
                 table_names,
                 tribe.persons().map(AsRef::as_ref).collect::<Vec<_>>(),
             ),
-        }
+        })
     }
 
     fn assignment(&self) -> model::Assignment {
@@ -166,9 +186,11 @@ impl<'a> Solver<'a> {
         out
     }
 
-    pub fn fake_solve(&mut self) -> Result<model::Assignment, UnsolvableError> {
+    pub fn fake_solve(&mut self) -> SolverResult<model::Assignment> {
         if self.assignor.n_seats() < self.assignor.n_persons() {
-            return Err("There is not enough sitting space".into());
+            return Err(SolverError::NoSolution(
+                "there is not enough sitting space".into(),
+            ));
         }
 
         self.assignor.dummy_assign();

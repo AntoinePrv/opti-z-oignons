@@ -9,7 +9,7 @@ use app::solution::Page as SolutionPage;
 use app::NotFound;
 use logic::{
     model::{Assignment, Tables, Tribe},
-    solver::UnsolvableError,
+    solver::SolverError,
 };
 
 const FAVICON: &str = concat!(
@@ -37,7 +37,7 @@ impl ProblemSignal {
 
 #[derive(Clone)]
 struct SolutionSignal {
-    pub assignment: Signal<Result<Assignment, UnsolvableError>>,
+    pub assignment: Signal<Result<Assignment, SolverError>>,
     pub outdated: Signal<SolutionState>,
 }
 
@@ -51,7 +51,7 @@ enum SolutionState {
 impl SolutionSignal {
     pub fn new() -> Self {
         Self {
-            assignment: Signal::new(Err("There is no solution".into())),
+            assignment: Signal::new(Err(SolverError::Unknown)),
             outdated: Signal::new(SolutionState::Missing),
         }
     }

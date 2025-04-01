@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::{
-    logic::{model::Assignment, solver::UnsolvableError},
+    logic::{model::Assignment, solver::SolverError},
     SolutionState,
 };
 
@@ -52,7 +52,7 @@ fn solve_disabled(state: SolutionState) -> bool {
 }
 
 #[component]
-fn AssignmentList(assignment: Signal<Result<Assignment, UnsolvableError>>) -> Element {
+fn AssignmentList(assignment: Signal<Result<Assignment, SolverError>>) -> Element {
     if let Err(err) = &(*assignment.read()) {
         return rsx!(
             p { "{err}" }
