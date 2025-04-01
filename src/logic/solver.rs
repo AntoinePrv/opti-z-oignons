@@ -10,11 +10,14 @@ pub fn solve(
     solver.fake_solve()
 }
 
-type PersonIdx = u32;
-type TableIdx = u32;
-type SeatIdx = u32;
+type Size = u32;
 
-type TableSize = u32;
+// Perform a static assertion to ensure Size can be safely cast to usize
+const _: [(); 1 - ((Size::MAX as usize as Size == Size::MAX) as usize)] = [(); 0];
+
+type PersonIdx = Size;
+type TableIdx = Size;
+type SeatIdx = Size;
 
 struct BackwardMapping<'a> {
     table_names: Vec</* TableIdx, */ &'a model::TableNameRef>,
@@ -32,12 +35,12 @@ impl<'a> BackwardMapping<'a> {
         }
     }
 
-    pub fn table_name(&self, idx: TableIdx) -> &'a model::TableNameRef {
-        *self.table_names.get(idx as usize).unwrap()
+    pub fn table_name(&self, idx: TableIdx) -> Option<&'a model::TableNameRef> {
+        self.table_names.get(idx as usize).copied()
     }
 
-    pub fn person_name(&self, idx: PersonIdx) -> &'a model::PersonNameRef {
-        *self.person_names.get(idx as usize).unwrap()
+    pub fn person_name(&self, idx: PersonIdx) -> Option<&'a model::PersonNameRef> {
+        self.person_names.get(idx as usize).copied()
     }
 }
 
@@ -51,7 +54,7 @@ impl Assignor {
     const UNASSIGNED_SEAT: PersonIdx = PersonIdx::MAX;
     const UNASSIGNED_PERSON: TableIdx = TableIdx::MAX;
 
-    pub fn from_table_sizes(mut table_sizes: Vec<TableSize>, n_persons: usize) -> Self {
+    pub fn from_table_sizes(mut table_sizes: Vec<Size>, n_persons: Size) -> Self {
         // Reserve last index for past-end pointer
         table_sizes.push(0);
 
@@ -71,31 +74,30 @@ impl Assignor {
         Self {
             table_ptrs: table_sizes,
             seat_assignment: vec![Self::UNASSIGNED_SEAT; n_seats],
-            person_assignment: vec![Self::UNASSIGNED_PERSON; n_persons],
+            person_assignment: vec![Self::UNASSIGNED_PERSON; n_persons as usize],
         }
     }
 
-    pub fn fake_assign(&mut self) {
+    fn dummy_assign(&mut self) {
         for (p, s) in self.persons().zip(self.seat_assignment.iter_mut()) {
             *s = p;
         }
     }
 
-    pub fn n_tables(&self) -> usize {
-        // TODO or should it be u32?
-        self.table_ptrs.len() - 1
+    pub fn n_tables(&self) -> Size {
+        (self.table_ptrs.len() - 1) as Size
     }
 
     pub fn tables(&self) -> impl Iterator<Item = TableIdx> {
-        (0..self.n_tables() as u32).into_iter()
+        (0..self.n_tables() as Size).into_iter()
     }
 
-    pub fn n_seats(&self) -> usize {
-        self.table_ptrs.last().copied().unwrap_or(0) as usize
+    pub fn n_seats(&self) -> Size {
+        self.table_ptrs.last().copied().unwrap_or(0)
     }
 
-    pub fn n_persons(&self) -> usize {
-        self.person_assignment.len()
+    pub fn n_persons(&self) -> Size {
+        self.person_assignment.len() as Size
     }
 
     pub fn persons(&self) -> impl Iterator<Item = PersonIdx> {
@@ -109,10 +111,12 @@ impl Assignor {
         let seats = &self.seat_assignment[table_start..table_end];
 
         let free = seats.iter().position(|s| *s == Self::UNASSIGNED_SEAT);
-        &seats[table_start..free.unwrap_or(table_end)]
+        &seats[0..free.unwrap_or(seats.len())]
     }
 
     pub fn persons_at_tables(&self) -> impl Iterator<Item = (TableIdx, &[PersonIdx])> {
+        dbg!(&self.table_ptrs);
+        dbg!(&self.seat_assignment);
         self.tables().map(|t| (t, self.persons_at_table(t)))
     }
 }
@@ -140,7 +144,7 @@ impl<'a> Solver<'a> {
         table_sizes.sort();
 
         Self {
-            assignor: Assignor::from_table_sizes(table_sizes, tribe.persons_count()),
+            assignor: Assignor::from_table_sizes(table_sizes, tribe.persons_count() as Size),
             mapping: BackwardMapping::new(
                 table_names,
                 tribe.persons().map(AsRef::as_ref).collect::<Vec<_>>(),
@@ -151,10 +155,10 @@ impl<'a> Solver<'a> {
     fn assignment(&self) -> model::Assignment {
         let mut out = model::Assignment::new();
         for (table_idx, persons_idx) in self.assignor.persons_at_tables() {
-            let table_name = self.mapping.table_name(table_idx).to_owned();
+            let table_name = self.mapping.table_name(table_idx).unwrap().to_owned();
             let person_names: Vec<_> = persons_idx
                 .iter()
-                .map(|p| self.mapping.person_name(*p).to_owned())
+                .map(|p| self.mapping.person_name(*p).unwrap().to_owned())
                 .collect();
             let prev = out.insert(table_name, person_names);
             assert!(prev.is_none());
@@ -167,7 +171,7 @@ impl<'a> Solver<'a> {
             return Err("There is not enough sitting space".into());
         }
 
-        self.assignor.fake_assign();
+        self.assignor.dummy_assign();
         Ok(self.assignment())
     }
 }
@@ -180,7 +184,42 @@ mod tests {
     fn test_backward_mapping() {
         let mapping = BackwardMapping::new(vec!["Oak"], vec!["A", "B"]);
 
-        assert_eq!(mapping.table_name(0), "Oak");
-        assert_eq!(mapping.person_name(1), "B");
+        assert_eq!(mapping.table_name(0), Some("Oak"));
+        assert_eq!(mapping.person_name(1), Some("B"));
+        assert_eq!(mapping.person_name(3), None);
+    }
+
+    #[test]
+    fn test_assignor() {
+        let tables = vec![3, 4, 4, 6];
+        let n_persons: Size = 15;
+        let mut assignor = Assignor::from_table_sizes(tables.clone(), n_persons);
+
+        assert_eq!(assignor.n_tables() as usize, tables.len());
+        assert_eq!(assignor.n_seats(), tables.iter().sum::<u32>());
+        assert_eq!(assignor.n_persons(), n_persons);
+        assert_eq!(
+            assignor.persons().collect::<Vec<_>>(),
+            (0..n_persons).collect::<Vec<_>>()
+        );
+        assert_eq!(
+            assignor.tables().collect::<Vec<_>>(),
+            (0u32..(tables.len() as u32)).collect::<Vec<_>>()
+        );
+        assert_eq!(
+            assignor.persons_at_tables().collect::<Vec<_>>(),
+            vec![(0, &[] as &[u32]), (1, &[]), (2, &[]), (3, &[]),]
+        );
+
+        assignor.dummy_assign();
+        assert_eq!(
+            assignor.persons_at_tables().collect::<Vec<_>>(),
+            vec![
+                (0, &[0u32, 1, 2] as &[u32]),
+                (1, &[3u32, 4, 5, 6] as &[u32]),
+                (2, &[7u32, 8, 9, 10] as &[u32]),
+                (3, &[11u32, 12, 13, 14 /* free, free */,] as &[u32]),
+            ]
+        );
     }
 }
