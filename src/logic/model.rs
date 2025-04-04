@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
-#[derive(Clone, Copy, strum::Display, strum::EnumIter, strum::FromRepr)]
+#[derive(Clone, Copy, Debug, strum::Display, strum::EnumIter, strum::FromRepr)]
 #[strum(serialize_all = "lowercase")]
 pub enum RelationStrength {
     Hates,
@@ -26,6 +26,7 @@ impl RelationStrength {
 pub type PersonName = String;
 pub type PersonNameRef = str;
 
+#[derive(Default)]
 pub struct Tribe {
     directed_relations: BTreeMap<PersonName, HashMap<PersonName, RelationStrength>>,
 }

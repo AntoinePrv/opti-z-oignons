@@ -1,8 +1,8 @@
-use super::model;
+use std::collections::BTreeMap;
 
-use thiserror::Error;
+use super::model::{self, RelationStrength};
 
-#[derive(Error, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum SolverError {
     #[error("the problem is too large, {0} (max {max})", max=Size::MAX)]
     ProblemTooLarge(String),
@@ -28,6 +28,7 @@ type PersonIdx = Size;
 type TableIdx = Size;
 type SeatIdx = Size;
 
+#[derive(Clone, Debug)]
 struct BackwardMapping<'a> {
     table_names: Vec</* TableIdx, */ &'a model::TableNameRef>,
     person_names: Vec</* PersonIdx, */ &'a model::PersonNameRef>,
@@ -53,6 +54,7 @@ impl<'a> BackwardMapping<'a> {
     }
 }
 
+#[derive(Clone, Debug)]
 struct Assignor {
     table_ptrs: Vec</* TableIdx, */ SeatIdx>,
     seat_assignment: Vec</* SeatIdx, */ PersonIdx>,
@@ -124,27 +126,70 @@ impl Assignor {
     }
 
     pub fn persons_at_tables(&self) -> impl Iterator<Item = (TableIdx, &[PersonIdx])> {
-        dbg!(&self.table_ptrs);
-        dbg!(&self.seat_assignment);
         self.tables().map(|t| (t, self.persons_at_table(t)))
     }
 }
 
+type RelationGraph<'a> = petgraph::csr::Csr<(), RelationStrength, petgraph::Undirected, PersonIdx>;
+
+#[derive(Clone, Debug)]
 struct Solver<'a> {
     assignor: Assignor,
     mapping: BackwardMapping<'a>,
+    relations: RelationGraph<'a>,
 }
 
-impl<'a> Solver<'a> {
-    pub fn new(tables: &'a model::Tables, tribe: &'a model::Tribe) -> SolverResult<Self> {
-        if tables.len() >= (Size::MAX as usize) {
-            return Err(SolverError::ProblemTooLarge(
-                "there are too many tables".into(),
-            ));
-        }
+impl<'pb> Solver<'pb> {
+    pub fn new(tables: &'pb model::Tables, tribe: &'pb model::Tribe) -> SolverResult<Self> {
+        let (table_names, table_sizes) = Self::build_tables(tables)?;
+        let (relations, persons) = Self::build_relations(tribe)?;
+
+        Ok(Self {
+            assignor: Assignor::from_table_sizes(table_sizes, tribe.persons_count() as Size),
+            mapping: BackwardMapping::new(table_names, persons),
+            relations,
+        })
+    }
+
+    pub fn build_relations<'a>(
+        tribe: &'a model::Tribe,
+    ) -> SolverResult<(
+        RelationGraph<'a>,
+        Vec</* PersonIdx, */ &'a model::PersonNameRef>,
+    )> {
         if tribe.persons_count() >= (Size::MAX as usize) {
             return Err(SolverError::ProblemTooLarge(
                 "there are too many persons".into(),
+            ));
+        }
+
+        let persons = tribe.persons().map(AsRef::as_ref).collect::<Vec<_>>();
+        let persons_forward = persons
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(idx, name)| (name, idx as PersonIdx))
+            .collect::<BTreeMap<&model::PersonNameRef, PersonIdx>>();
+
+        let mut relations = RelationGraph::with_nodes(tribe.persons_count() as usize);
+        for (p1, p2, strenght) in tribe.relations() {
+            relations.add_edge(
+                // Safe because all indices added
+                *persons_forward.get(p1.as_str()).unwrap(),
+                *persons_forward.get(p2.as_str()).unwrap(),
+                strenght,
+            );
+        }
+
+        assert_eq!(relations.node_count(), persons.len());
+        Ok((relations, persons))
+    }
+    fn build_tables<'a>(
+        tables: &'a model::Tables,
+    ) -> SolverResult<(Vec<&'a model::TableNameRef>, Vec<Size>)> {
+        if tables.len() >= (Size::MAX as usize) {
+            return Err(SolverError::ProblemTooLarge(
+                "there are too many tables".into(),
             ));
         }
 
@@ -157,19 +202,15 @@ impl<'a> Solver<'a> {
             .iter()
             .try_fold(0u32, |acc, &x| acc.checked_add(x));
         if n_seats.is_none() {
-            return Err(SolverError::ProblemTooLarge("there are too seats".into()));
+            Err(SolverError::ProblemTooLarge(
+                "there are too many seats".into(),
+            ))
+        } else {
+            table_names.sort_unstable_by_key(|n| tables.get(*n).unwrap().n_seats);
+            table_sizes.sort();
+            assert_eq!(table_names.len(), table_sizes.len());
+            Ok((table_names, table_sizes))
         }
-
-        table_names.sort_unstable_by_key(|n| tables.get(*n).unwrap().n_seats);
-        table_sizes.sort();
-
-        Ok(Self {
-            assignor: Assignor::from_table_sizes(table_sizes, tribe.persons_count() as Size),
-            mapping: BackwardMapping::new(
-                table_names,
-                tribe.persons().map(AsRef::as_ref).collect::<Vec<_>>(),
-            ),
-        })
     }
 
     fn assignment(&self) -> model::Assignment {
@@ -200,6 +241,9 @@ impl<'a> Solver<'a> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
+    use super::super::examples;
     use super::*;
 
     #[test]
@@ -243,5 +287,41 @@ mod tests {
                 (3, &[11u32, 12, 13, 14 /* free, free */,] as &[u32]),
             ]
         );
+    }
+
+    #[test]
+    fn test_solver_empty() -> SolverResult<()> {
+        let (tribe, tables) = examples::empty();
+        let mut solver = Solver::new(&tables, &tribe)?;
+        let assignment = solver.fake_solve()?;
+
+        assert!(assignment.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_solver_harry_potter() -> SolverResult<()> {
+        let (tribe, tables) = examples::harry_potter();
+        let mut solver = Solver::new(&tables, &tribe)?;
+        dbg!(&solver);
+        let assignment = solver.fake_solve()?;
+
+        assert_eq!(assignment.len(), tables.len());
+        for t in tables.keys() {
+            assert!(assignment.contains_key(t));
+        }
+
+        let assignees = assignment
+            .values()
+            .map(|t| t.iter())
+            .flatten()
+            .collect::<HashSet<_>>();
+        assert_eq!(assignees.len(), tribe.persons_count());
+        for p in tribe.persons() {
+            assert!(assignees.contains(p));
+        }
+
+        Ok(())
     }
 }

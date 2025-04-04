@@ -1,5 +1,9 @@
 use super::model::{RelationStrength as S, TableType, Tables, Tribe};
 
+pub fn empty() -> (Tribe, Tables) {
+    (Default::default(), Default::default())
+}
+
 pub fn harry_potter() -> (Tribe, Tables) {
     const RELATIONS: [Relation; 40] = [
         ("Harry Potter", S::Loves, "Ginny Weasley"),
