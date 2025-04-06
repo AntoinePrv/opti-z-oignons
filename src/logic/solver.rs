@@ -2,6 +2,17 @@ use std::collections::BTreeMap;
 
 use super::model::{self, RelationStrength};
 
+type Size = u32;
+type Cost = f32;
+type PersonIdx = Size;
+type TableIdx = Size;
+type SeatIdx = Size;
+
+// Perform a static assertion to ensure Size can be safely cast to usize
+const _: [(); 1 - ((Size::MAX as usize as Size == Size::MAX) as usize)] = [(); 0];
+
+pub type SolverResult<T> = Result<T, SolverError>;
+
 #[derive(thiserror::Error, Debug)]
 pub enum SolverError {
     #[error("the problem is too large, {0} (max {max})", max=Size::MAX)]
@@ -14,10 +25,8 @@ pub enum SolverError {
 
 #[derive(Clone, Debug)]
 pub struct SolverSettings {
-    pub relation_values: [f32; RelationStrength::len()],
+    pub relation_values: [Cost; RelationStrength::len()],
 }
-
-pub type SolverResult<T> = Result<T, SolverError>;
 
 pub fn solve(tables: &model::Tables, tribe: &model::Tribe) -> SolverResult<model::Assignment> {
     let mut solver = Solver::new(
@@ -29,15 +38,6 @@ pub fn solve(tables: &model::Tables, tribe: &model::Tribe) -> SolverResult<model
     )?;
     solver.fake_solve()
 }
-
-type Size = u32;
-
-// Perform a static assertion to ensure Size can be safely cast to usize
-const _: [(); 1 - ((Size::MAX as usize as Size == Size::MAX) as usize)] = [(); 0];
-
-type PersonIdx = Size;
-type TableIdx = Size;
-type SeatIdx = Size;
 
 #[derive(Clone, Debug)]
 struct BackwardMapping<'a> {
@@ -100,44 +100,108 @@ impl Assignor {
         }
     }
 
-    fn dummy_assign(&mut self) {
-        for (p, s) in self.persons().zip(self.seat_assignment.iter_mut()) {
-            *s = p;
-        }
-    }
-
-    pub fn n_tables(&self) -> Size {
-        (self.table_ptrs.len() - 1) as Size
+    pub fn persons(&self) -> impl Iterator<Item = PersonIdx> {
+        (0..self.person_count() as u32).into_iter()
     }
 
     pub fn tables(&self) -> impl Iterator<Item = TableIdx> {
-        (0..self.n_tables() as Size).into_iter()
+        (0..self.table_count() as Size).into_iter()
     }
 
-    pub fn n_seats(&self) -> Size {
+    pub fn seat_count(&self) -> Size {
         self.table_ptrs.last().copied().unwrap_or(0)
     }
 
-    pub fn n_persons(&self) -> Size {
+    pub fn person_count(&self) -> Size {
         self.person_assignment.len() as Size
     }
 
-    pub fn persons(&self) -> impl Iterator<Item = PersonIdx> {
-        (0..self.n_persons() as u32).into_iter()
+    pub fn table_count(&self) -> Size {
+        (self.table_ptrs.len() - 1) as Size
     }
 
-    pub fn persons_at_table(&self, idx: TableIdx) -> &[PersonIdx] {
-        let idx = idx as usize;
+    fn table_slice(&self, table: TableIdx) -> &[SeatIdx] {
+        let idx = table as usize;
         let table_start = self.table_ptrs[idx] as usize;
         let table_end = self.table_ptrs[idx + 1] as usize;
-        let seats = &self.seat_assignment[table_start..table_end];
-
-        let free = seats.iter().position(|s| *s == Self::UNASSIGNED_SEAT);
-        &seats[0..free.unwrap_or(seats.len())]
+        &self.seat_assignment[table_start..table_end]
     }
 
-    pub fn persons_at_tables(&self) -> impl Iterator<Item = (TableIdx, &[PersonIdx])> {
-        self.tables().map(|t| (t, self.persons_at_table(t)))
+    fn table_slice_mut(&mut self, table: TableIdx) -> &mut [SeatIdx] {
+        let idx = table as usize;
+        let table_start = self.table_ptrs[idx] as usize;
+        let table_end = self.table_ptrs[idx + 1] as usize;
+        &mut self.seat_assignment[table_start..table_end]
+    }
+
+    fn table_free_seat_offset(&self, table: TableIdx) -> Option<Size> {
+        let seats = self.table_slice(table);
+        seats
+            .iter()
+            .position(|s| *s == Self::UNASSIGNED_SEAT)
+            .map(|idx| idx as Size)
+    }
+
+    pub fn table_person_count(&self, table: TableIdx) -> Size {
+        self.table_free_seat_offset(table)
+            .unwrap_or(self.table_seat_count(table))
+    }
+
+    pub fn table_seat_count(&self, table: TableIdx) -> Size {
+        self.table_slice(table).len() as Size
+    }
+
+    pub fn table_is_full(&self, table: TableIdx) -> bool {
+        self.table_slice(table)
+            .last()
+            .map(|p| *p != Self::UNASSIGNED_SEAT)
+            .unwrap_or(true)
+    }
+
+    pub fn table_persons(&self, table: TableIdx) -> &[PersonIdx] {
+        let seats = self.table_slice(table);
+        &seats[0..(self.table_person_count(table) as usize)]
+    }
+
+    pub fn table_assignment(&self) -> impl Iterator<Item = (TableIdx, &[PersonIdx])> {
+        self.tables().map(|t| (t, self.table_persons(t)))
+    }
+
+    pub fn person_is_seated(&self, person: PersonIdx) -> bool {
+        self.person_assignment[person as usize] != Self::UNASSIGNED_PERSON
+    }
+
+    pub fn assign(&mut self, person: PersonIdx, table: TableIdx) -> bool {
+        if self.person_is_seated(person) {
+            return false;
+        }
+
+        let free = self.table_free_seat_offset(table);
+        let seats = self.table_slice_mut(table);
+        if let Some(s) = free {
+            seats[s as usize] = person;
+            self.person_assignment[person as usize] = table;
+            true
+        } else {
+            false
+        }
+    }
+
+    fn dummy_assign(&mut self) {
+        let mut tables = self.tables();
+        let mut t = tables.next();
+        let mut persons = self.persons();
+        let mut p = persons.next();
+
+        while t.is_some() && p.is_some() {
+            if self.table_is_full(t.unwrap()) {
+                t = tables.next();
+            } else {
+                let assigned = self.assign(p.unwrap(), t.unwrap());
+                assert!(assigned);
+                p = persons.next();
+            }
+        }
     }
 }
 
@@ -201,6 +265,7 @@ impl<'pb> Solver<'pb> {
         assert_eq!(relations.node_count(), persons.len());
         Ok((relations, persons))
     }
+
     fn build_tables<'a>(
         tables: &'a model::Tables,
     ) -> SolverResult<(Vec<&'a model::TableNameRef>, Vec<Size>)> {
@@ -232,7 +297,7 @@ impl<'pb> Solver<'pb> {
 
     fn assignment(&self) -> model::Assignment {
         let mut out = model::Assignment::new();
-        for (table_idx, persons_idx) in self.assignor.persons_at_tables() {
+        for (table_idx, persons_idx) in self.assignor.table_assignment() {
             let table_name = self.mapping.table_name(table_idx).unwrap().to_owned();
             let person_names: Vec<_> = persons_idx
                 .iter()
@@ -245,7 +310,7 @@ impl<'pb> Solver<'pb> {
     }
 
     pub fn fake_solve(&mut self) -> SolverResult<model::Assignment> {
-        if self.assignor.n_seats() < self.assignor.n_persons() {
+        if self.assignor.seat_count() < self.assignor.person_count() {
             return Err(SolverError::NoSolution(
                 "there is not enough sitting space".into(),
             ));
@@ -278,9 +343,9 @@ mod tests {
         let n_persons: Size = 15;
         let mut assignor = Assignor::from_table_sizes(tables.clone(), n_persons);
 
-        assert_eq!(assignor.n_tables() as usize, tables.len());
-        assert_eq!(assignor.n_seats(), tables.iter().sum::<u32>());
-        assert_eq!(assignor.n_persons(), n_persons);
+        assert_eq!(assignor.table_count() as usize, tables.len());
+        assert_eq!(assignor.seat_count(), tables.iter().sum::<u32>());
+        assert_eq!(assignor.person_count(), n_persons);
         assert_eq!(
             assignor.persons().collect::<Vec<_>>(),
             (0..n_persons).collect::<Vec<_>>()
@@ -290,13 +355,13 @@ mod tests {
             (0u32..(tables.len() as u32)).collect::<Vec<_>>()
         );
         assert_eq!(
-            assignor.persons_at_tables().collect::<Vec<_>>(),
+            assignor.table_assignment().collect::<Vec<_>>(),
             vec![(0, &[] as &[u32]), (1, &[]), (2, &[]), (3, &[]),]
         );
 
         assignor.dummy_assign();
         assert_eq!(
-            assignor.persons_at_tables().collect::<Vec<_>>(),
+            assignor.table_assignment().collect::<Vec<_>>(),
             vec![
                 (0, &[0u32, 1, 2] as &[u32]),
                 (1, &[3u32, 4, 5, 6] as &[u32]),
