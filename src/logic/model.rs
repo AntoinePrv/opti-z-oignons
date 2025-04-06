@@ -21,6 +21,12 @@ impl RelationStrength {
     pub fn iter() -> impl Iterator<Item = Self> + Clone + DoubleEndedIterator + ExactSizeIterator {
         <Self as strum::IntoEnumIterator>::iter()
     }
+
+    pub const fn len() -> usize {
+        RelationStrength::Loves as usize + 1
+        // TODO exerimental
+        // std::mem::variant_count::<Self>()
+    }
 }
 
 pub type PersonName = String;
@@ -109,6 +115,15 @@ mod tests {
     use std::collections::HashSet;
 
     use super::*;
+
+    #[test]
+    fn test_relationship_strength() {
+        assert_eq!(RelationStrength::min() as usize, 0);
+        assert_eq!(
+            RelationStrength::max() as usize + 1,
+            RelationStrength::len()
+        );
+    }
 
     #[test]
     fn test_tribe() {

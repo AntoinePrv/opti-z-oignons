@@ -12,10 +12,21 @@ pub enum SolverError {
     Unknown,
 }
 
+#[derive(Clone, Debug)]
+pub struct SolverSettings {
+    pub relation_values: [f32; RelationStrength::len()],
+}
+
 pub type SolverResult<T> = Result<T, SolverError>;
 
 pub fn solve(tables: &model::Tables, tribe: &model::Tribe) -> SolverResult<model::Assignment> {
-    let mut solver = Solver::new(tables, tribe)?;
+    let mut solver = Solver::new(
+        tables,
+        tribe,
+        SolverSettings {
+            relation_values: [-4.0, -1.0, 1.0, 4.0],
+        },
+    )?;
     solver.fake_solve()
 }
 
@@ -137,10 +148,15 @@ struct Solver<'a> {
     assignor: Assignor,
     mapping: BackwardMapping<'a>,
     relations: RelationGraph<'a>,
+    settings: SolverSettings,
 }
 
 impl<'pb> Solver<'pb> {
-    pub fn new(tables: &'pb model::Tables, tribe: &'pb model::Tribe) -> SolverResult<Self> {
+    pub fn new(
+        tables: &'pb model::Tables,
+        tribe: &'pb model::Tribe,
+        settings: SolverSettings,
+    ) -> SolverResult<Self> {
         let (table_names, table_sizes) = Self::build_tables(tables)?;
         let (relations, persons) = Self::build_relations(tribe)?;
 
@@ -148,6 +164,7 @@ impl<'pb> Solver<'pb> {
             assignor: Assignor::from_table_sizes(table_sizes, tribe.persons_count() as Size),
             mapping: BackwardMapping::new(table_names, persons),
             relations,
+            settings,
         })
     }
 
@@ -292,7 +309,13 @@ mod tests {
     #[test]
     fn test_solver_empty() -> SolverResult<()> {
         let (tribe, tables) = examples::empty();
-        let mut solver = Solver::new(&tables, &tribe)?;
+        let mut solver = Solver::new(
+            &tables,
+            &tribe,
+            SolverSettings {
+                relation_values: [-4.0, -1.0, 1.0, 4.0],
+            },
+        )?;
         let assignment = solver.fake_solve()?;
 
         assert!(assignment.is_empty());
@@ -303,8 +326,13 @@ mod tests {
     #[test]
     fn test_solver_harry_potter() -> SolverResult<()> {
         let (tribe, tables) = examples::harry_potter();
-        let mut solver = Solver::new(&tables, &tribe)?;
-        dbg!(&solver);
+        let mut solver = Solver::new(
+            &tables,
+            &tribe,
+            SolverSettings {
+                relation_values: [-4.0, -1.0, 1.0, 4.0],
+            },
+        )?;
         let assignment = solver.fake_solve()?;
 
         assert_eq!(assignment.len(), tables.len());
