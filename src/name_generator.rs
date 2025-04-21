@@ -26,11 +26,11 @@ mod tests {
 
     #[test]
     fn test_name_generator() {
-        let mut gen = NameGenerator::new();
-        assert!(gen.next().is_some());
+        let mut generator = NameGenerator::new();
+        assert!(generator.next().is_some());
 
         const CNT: usize = 10_000;
-        let set = gen.take(CNT).collect::<HashSet<_>>();
+        let set = generator.take(CNT).collect::<HashSet<_>>();
         assert_eq!(set.len(), CNT);
     }
 }

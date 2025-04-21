@@ -248,9 +248,9 @@ fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
                 minlength: 1,
             }
             datalist { id: RELATION_PERSON_DATALIST_ID,
-                {tribe.read().persons().map(|p| rsx! {
+                for p in tribe.read().persons() {
                     option { value: "{p}" }
-                })}
+                }
             }
 
             label { r#for: RELATION_STRENGTH_ID, "Relation" }

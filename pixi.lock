@@ -51,10 +51,10 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/python_abi-3.13-5_cp313.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.2-py313h8060acc_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/readline-8.2-h8228510_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.84.0-h1a8d7c4_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-src-1.84.0-unix_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-wasm32-unknown-unknown-1.84.0-unix_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.84.0-h2c6d0dc_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.86.0-h1a8d7c4_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-src-1.86.0-unix_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-wasm32-unknown-unknown-1.86.0-unix_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.86.0-h2c6d0dc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/sccache-0.9.1-h159367c_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-75.8.0-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sysroot_linux-64-2.17-h0157908_18.conda
@@ -111,10 +111,10 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/python_abi-3.13-5_cp313.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pyyaml-6.0.2-py313ha9b7d5b_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/readline-8.2-h92ec313_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/rust-1.84.0-h4ff7c5d_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-src-1.84.0-unix_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-aarch64-apple-darwin-1.84.0-hf6ec828_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-wasm32-unknown-unknown-1.84.0-unix_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/rust-1.86.0-h4ff7c5d_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-src-1.86.0-unix_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-aarch64-apple-darwin-1.86.0-hf6ec828_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-wasm32-unknown-unknown-1.86.0-unix_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/sccache-0.9.1-h8dba533_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-75.8.0-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/sigtool-0.1.3-h44b9a77_0.tar.bz2
@@ -130,8 +130,6 @@ packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
   sha256: fe51de6107f9edc7aa4f786a70f4a883943bc9d39b3bb7307c04c41410990726
   md5: d7c89558ba9fa0495403155b64376d81
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: None
   size: 2562
@@ -145,8 +143,6 @@ packages:
   - libgomp >=7.5.0
   constrains:
   - openmp_impl 9999
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -157,8 +153,6 @@ packages:
   md5: 348619f90eee04901f4a70615efff35b
   depends:
   - binutils_impl_linux-64 >=2.43,<2.44.0a0
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only
   license_family: GPL
@@ -170,8 +164,6 @@ packages:
   depends:
   - ld_impl_linux-64 2.43 h712a8e2_2
   - sysroot_linux-64
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only
   license_family: GPL
@@ -182,8 +174,6 @@ packages:
   md5: 18aba879ddf1f8f28145ca6fcb873d8c
   depends:
   - binutils_impl_linux-64 2.43 h4bf12b8_2
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only
   license_family: GPL
@@ -195,8 +185,6 @@ packages:
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc-ng >=12
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: bzip2-1.0.6
   license_family: BSD
@@ -207,8 +195,6 @@ packages:
   md5: fc6948412dbbbe9a4c9ddbbcfe0a79ab
   depends:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: bzip2-1.0.6
   license_family: BSD
@@ -221,8 +207,6 @@ packages:
   - binutils
   - gcc
   - gcc_linux-64 13.*
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -236,8 +220,6 @@ packages:
   - clang_osx-arm64 18.*
   - ld64 >=530
   - llvm-openmp
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -246,8 +228,6 @@ packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ca-certificates-2025.1.31-hbcca054_0.conda
   sha256: bf832198976d559ab44d6cdb315642655547e26d826e34da67cbee6624cda189
   md5: 19f3a56f68d2fd06c516076bff482c52
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: ISC
   size: 158144
@@ -255,8 +235,6 @@ packages:
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ca-certificates-2025.1.31-hf0a4a13_0.conda
   sha256: 7e12816618173fe70f5c638b72adf4bfd4ddabf27794369bb17871c5bb75b9f9
   md5: 3569d6a9141adc64d2fe4797f3289e06
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: ISC
   size: 158425
@@ -268,8 +246,6 @@ packages:
   - cctools_osx-arm64 1010.6 h3b4f5d3_3
   - ld64 951.9 h4c6efb1_3
   - libllvm18 >=18.1.8,<18.2.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: APSL-2.0
   license_family: Other
@@ -290,8 +266,6 @@ packages:
   - clang 18.1.*
   - cctools 1010.6.*
   - ld64 951.9.*
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: APSL-2.0
   license_family: Other
@@ -307,8 +281,6 @@ packages:
   - pycparser
   - python >=3.13.0rc1,<3.14.0a0
   - python_abi 3.13.* *_cp313
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -324,8 +296,6 @@ packages:
   - python >=3.13.0rc1,<3.14.0a0
   - python >=3.13.0rc1,<3.14.0a0 *_cp313
   - python_abi 3.13.* *_cp313
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -346,8 +316,6 @@ packages:
   md5: 0d19d68f06474d97b1b945b3eae132ac
   depends:
   - clang-18 18.1.8 default_hf90f093_7
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -361,8 +329,6 @@ packages:
   - libclang-cpp18.1 18.1.8 default_hf90f093_7
   - libcxx >=18.1.8
   - libllvm18 >=18.1.8,<18.2.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -377,8 +343,6 @@ packages:
   - compiler-rt 18.1.8.*
   - ld64_osx-arm64
   - llvm-tools 18.1.8.*
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -389,8 +353,6 @@ packages:
   md5: 29513735b8af0018e3ce8447531d69dd
   depends:
   - clang_impl_osx-arm64 18.1.8 h2ae9ea5_23
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -402,8 +364,6 @@ packages:
   depends:
   - clang 18.1.8 default_h474c9e2_7
   - libcxx-devel 18.1.8.*
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -417,8 +377,6 @@ packages:
   - clang 18.1.8.*
   - clangxx 18.1.8.*
   - compiler-rt_osx-arm64 18.1.8.*
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: APACHE
@@ -446,8 +404,6 @@ packages:
   - openssl >=3.4.1,<4.0a0
   constrains:
   - __glibc >=2.17
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 AND MIT
   size: 19520584
@@ -460,8 +416,6 @@ packages:
   - openssl >=3.4.1,<4.0a0
   constrains:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 AND MIT
   size: 17492444
@@ -490,8 +444,6 @@ packages:
   md5: 606924335b5bcdf90e9aed9a2f5d22ed
   depends:
   - gcc_impl_linux-64 13.3.0.*
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -508,8 +460,6 @@ packages:
   - libsanitizer 13.3.0 heb74ff8_1
   - libstdcxx >=13.3.0
   - sysroot_linux-64
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only WITH GCC-exception-3.1
   license_family: GPL
@@ -522,8 +472,6 @@ packages:
   - binutils_linux-64
   - gcc_impl_linux-64 13.3.0.*
   - sysroot_linux-64
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -534,8 +482,6 @@ packages:
   md5: 5eb22c1d7b3fc4abb50d92d621583137
   depends:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -571,8 +517,6 @@ packages:
   constrains:
   - cctools 1010.6.*
   - cctools_osx-arm64 1010.6.*
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: APSL-2.0
   license_family: Other
@@ -592,8 +536,6 @@ packages:
   - cctools 1010.6.*
   - ld 951.9.*
   - clang >=18.1.8,<19.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: APSL-2.0
   license_family: Other
@@ -606,8 +548,6 @@ packages:
   - __glibc >=2.17,<3.0.a0
   constrains:
   - binutils_impl_linux-64 2.43
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only
   license_family: GPL
@@ -620,8 +560,6 @@ packages:
   - __osx >=11.0
   - libcxx >=18.1.8
   - libllvm18 >=18.1.8,<18.2.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -632,8 +570,6 @@ packages:
   md5: 5b3e1610ff8bd5443476b91d618f5b77
   depends:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -644,8 +580,6 @@ packages:
   md5: b0f818db788046d60ffc693ddec7e26e
   depends:
   - libcxx >=18.1.8
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -659,8 +593,6 @@ packages:
   - libgcc >=13
   constrains:
   - expat 2.6.4.*
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -673,8 +605,6 @@ packages:
   - __osx >=11.0
   constrains:
   - expat 2.6.4.*
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -686,8 +616,6 @@ packages:
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=13
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -696,8 +624,6 @@ packages:
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libffi-3.4.2-h3422bc3_5.tar.bz2
   sha256: 41b3d13efb775e340e4dba549ab5c029611ea6918703096b2eaa9c015c0750ca
   md5: 086914b672be056eb70fd4285b6783b6
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -712,8 +638,6 @@ packages:
   constrains:
   - libgomp 14.2.0 h77fa898_1
   - libgcc-ng ==14.2.0=*_1
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only WITH GCC-exception-3.1
   license_family: GPL
@@ -734,8 +658,6 @@ packages:
   md5: e39480b9ca41323497b05492a63bc35b
   depends:
   - libgcc 14.2.0 h77fa898_1
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only WITH GCC-exception-3.1
   license_family: GPL
@@ -746,8 +668,6 @@ packages:
   md5: cc3573974587f12dda90d96e3e55a702
   depends:
   - _libgcc_mutex 0.1 conda_forge
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only WITH GCC-exception-3.1
   license_family: GPL
@@ -756,8 +676,6 @@ packages:
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libiconv-1.17-h0d3ecfb_2.conda
   sha256: bc7de5097b97bcafcf7deaaed505f7ce02f648aac8eccc0d5a47cc599a1d0304
   md5: 69bda57310071cf6d2b86caf11573d2d
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: LGPL-2.1-only
   size: 676469
@@ -771,8 +689,6 @@ packages:
   - libxml2 >=2.13.5,<3.0a0
   - libzlib >=1.3.1,<2.0a0
   - zstd >=1.5.6,<1.6.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -784,8 +700,6 @@ packages:
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=13
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: 0BSD
   size: 111357
@@ -795,8 +709,6 @@ packages:
   md5: e3fd1f8320a100f2b210e690a57cd615
   depends:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: 0BSD
   size: 98945
@@ -807,8 +719,6 @@ packages:
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc-ng >=12
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-2-Clause
   license_family: BSD
@@ -819,8 +729,6 @@ packages:
   md5: 7476305c35dd9acef48da8f754eedb40
   depends:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-2-Clause
   license_family: BSD
@@ -832,8 +740,6 @@ packages:
   depends:
   - libgcc >=13.3.0
   - libstdcxx >=13.3.0
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only WITH GCC-exception-3.1
   license_family: GPL
@@ -846,8 +752,6 @@ packages:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=13
   - libzlib >=1.3.1,<2.0a0
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: Unlicense
   size: 878223
@@ -858,8 +762,6 @@ packages:
   depends:
   - __osx >=11.0
   - libzlib >=1.3.1,<2.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Unlicense
   size: 852831
@@ -869,8 +771,6 @@ packages:
   md5: 234a5554c53625688d51062645337328
   depends:
   - libgcc 14.2.0 h77fa898_1
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only WITH GCC-exception-3.1
   license_family: GPL
@@ -881,8 +781,6 @@ packages:
   md5: 40b61aab5c7ba9ff276c41cfffe6b80b
   depends:
   - libgcc-ng >=12
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -897,8 +795,6 @@ packages:
   - libiconv >=1.17,<2.0a0
   - liblzma >=5.6.3,<6.0a0
   - libzlib >=1.3.1,<2.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -912,8 +808,6 @@ packages:
   - libgcc >=13
   constrains:
   - zlib 1.3.1 *_2
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: Zlib
   license_family: Other
@@ -926,8 +820,6 @@ packages:
   - __osx >=11.0
   constrains:
   - zlib 1.3.1 *_2
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Zlib
   license_family: Other
@@ -940,8 +832,6 @@ packages:
   - __osx >=11.0
   constrains:
   - openmp 19.1.7|19.1.7.*
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: APACHE
@@ -962,8 +852,6 @@ packages:
   - llvmdev     18.1.8
   - llvm        18.1.8
   - clang       18.1.8
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -978,8 +866,6 @@ packages:
   - libxml2 >=2.13.5,<3.0a0
   - libzlib >=1.3.1,<2.0a0
   - zstd >=1.5.6,<1.6.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0 WITH LLVM-exception
   license_family: Apache
@@ -991,8 +877,6 @@ packages:
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=13
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: X11 AND BSD-3-Clause
   size: 891641
@@ -1002,8 +886,6 @@ packages:
   md5: 068d497125e4bf8a66bf707254fff5ae
   depends:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: X11 AND BSD-3-Clause
   size: 797030
@@ -1026,8 +908,6 @@ packages:
   - __glibc >=2.17,<3.0.a0
   - ca-certificates
   - libgcc >=13
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0
   license_family: Apache
@@ -1039,8 +919,6 @@ packages:
   depends:
   - __osx >=11.0
   - ca-certificates
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0
   license_family: Apache
@@ -1104,8 +982,6 @@ packages:
   - readline >=8.2,<9.0a0
   - tk >=8.6.13,<8.7.0a0
   - tzdata
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: Python-2.0
   size: 33354537
@@ -1130,8 +1006,6 @@ packages:
   - readline >=8.2,<9.0a0
   - tk >=8.6.13,<8.7.0a0
   - tzdata
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Python-2.0
   size: 12876637
@@ -1143,8 +1017,6 @@ packages:
   md5: 381bbd2a92c863f640a55b6ff3c35161
   constrains:
   - python 3.13.* *_cp313
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -1156,8 +1028,6 @@ packages:
   md5: b8e82d0a5c1664638f87f63cc5d241fb
   constrains:
   - python 3.13.* *_cp313
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD
@@ -1172,8 +1042,6 @@ packages:
   - python >=3.13,<3.14.0a0
   - python_abi 3.13.* *_cp313
   - yaml >=0.2.5,<0.3.0a0
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1188,8 +1056,6 @@ packages:
   - python >=3.13,<3.14.0a0 *_cp313
   - python_abi 3.13.* *_cp313
   - yaml >=0.2.5,<0.3.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1201,8 +1067,6 @@ packages:
   depends:
   - libgcc-ng >=12
   - ncurses >=6.3,<7.0a0
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only
   license_family: GPL
@@ -1213,90 +1077,84 @@ packages:
   md5: 8cbb776a2f641b943d413b3e19df71f4
   depends:
   - ncurses >=6.3,<7.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: GPL-3.0-only
   license_family: GPL
   size: 250351
   timestamp: 1679532511311
-- conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.84.0-h1a8d7c4_0.conda
-  sha256: a71f8e4fcfdb2ef40e8c1631c4cbe3bbad45b11e9317e6ea125783717d43920b
-  md5: a0d0badd8f8d61bb70aeeee701b7db07
+- conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.86.0-h1a8d7c4_0.conda
+  sha256: fa3b6757df927a24c3006bc5bffbac5b0c9a54b9755c08847f8a832ec1b79300
+  md5: 98eab8148e1447e79f9e03492d04e291
   depends:
   - __glibc >=2.17,<3.0.a0
   - gcc_impl_linux-64
   - libgcc >=13
   - libzlib >=1.3.1,<2.0a0
-  - rust-std-x86_64-unknown-linux-gnu 1.84.0 h2c6d0dc_0
+  - rust-std-x86_64-unknown-linux-gnu 1.86.0 h2c6d0dc_0
   - sysroot_linux-64 >=2.17
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
-  size: 209737774
-  timestamp: 1736474000046
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/rust-1.84.0-h4ff7c5d_0.conda
-  sha256: 24367eaa937b113cd90308c3a503f13e0043f76997f8b0fdca83ae0200e723d5
-  md5: c36f037e209638e8713ed6abee2ce3d8
+  size: 218638108
+  timestamp: 1743697775334
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/rust-1.86.0-h4ff7c5d_0.conda
+  sha256: 84eed612b108a2ac5db2eb76c5f2cd596fec8e21a3cb1eb478080d74a39fab13
+  md5: 05c1a701cdb550b46e0526c2453b7337
   depends:
-  - rust-std-aarch64-apple-darwin 1.84.0 hf6ec828_0
-  arch: arm64
-  platform: osx
+  - rust-std-aarch64-apple-darwin 1.86.0 hf6ec828_0
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
-  size: 208393099
-  timestamp: 1736476362423
-- conda: https://conda.anaconda.org/conda-forge/noarch/rust-src-1.84.0-unix_0.conda
-  sha256: ebe509b616bc20fec25afad11e2d4cb697588c536f95c2f62089ebf82df163fc
-  md5: 52ef5941092f911be44bc287dabd1033
+  size: 224722205
+  timestamp: 1743697077568
+- conda: https://conda.anaconda.org/conda-forge/noarch/rust-src-1.86.0-unix_0.conda
+  sha256: 73cc7c49ef8088fc5186f6aee48166ca71c7dc527997a592f5b76a815f4bda88
+  md5: 9c2af1ca0493191466b300691edc2145
   depends:
   - __unix
   constrains:
-  - rust >=1.84.0,<1.84.1.0a0
+  - rust >=1.86.0,<1.86.1.0a0
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
-  size: 3517728
-  timestamp: 1736473356171
-- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-aarch64-apple-darwin-1.84.0-hf6ec828_0.conda
-  sha256: 3d8155aa30c5b32cc41bdfe0a161cf84838499109e22e9c1a333eb170753d79a
-  md5: 5db6792d2b1e6c71034b60b90f44ac21
+  size: 3568928
+  timestamp: 1743696829470
+- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-aarch64-apple-darwin-1.86.0-hf6ec828_0.conda
+  sha256: 13ece700416fd30628019ee589b8de01a66991c2ff583e876057309cd4a0b59a
+  md5: e1a76ff63763cf04e06eca94978b9dd0
   depends:
   - __unix
   constrains:
-  - rust >=1.84.0,<1.84.1.0a0
+  - rust >=1.86.0,<1.86.1.0a0
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
-  size: 32511793
-  timestamp: 1736473247984
-- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-wasm32-unknown-unknown-1.84.0-unix_0.conda
-  sha256: 1f3edf3a838e6d417945db74d73b33e6efc9ab31b96fc4f4d4b111d7e4639c0e
-  md5: 4f802d1cce200ccc6eb20d53f0fae11d
+  size: 32999893
+  timestamp: 1743696811586
+- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-wasm32-unknown-unknown-1.86.0-unix_0.conda
+  sha256: 2c03ae8ce1925d2c6e65c717afd6c3d58cd9525b61d0a112d35fdb136a3aa36f
+  md5: d5a795a98593c4cad6e2563c9dd9472c
   depends:
   - __unix
   constrains:
-  - rust >=1.84.0,<1.84.1.0a0
+  - rust >=1.86.0,<1.86.1.0a0
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
-  size: 23785915
-  timestamp: 1736473677102
-- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.84.0-h2c6d0dc_0.conda
-  sha256: f3846cb70ff45ecbb82da5b3689b85244d047f71bff4c8cbaa27c76464641105
-  md5: 8d8fbfcb06f37d113812c5f86695fd67
+  size: 24201964
+  timestamp: 1743697333987
+- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.86.0-h2c6d0dc_0.conda
+  sha256: 8c1c68b7a8ce9657fea7d266607c21c9a00a382c346348a232e539c8a3266e84
+  md5: 2fcc4c775a50bd2ce3ccb8dc56e4fb47
   depends:
   - __unix
   constrains:
-  - rust >=1.84.0,<1.84.1.0a0
+  - rust >=1.86.0,<1.86.1.0a0
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
-  size: 37433391
-  timestamp: 1736473845771
+  size: 37636509
+  timestamp: 1743697574868
 - conda: https://conda.anaconda.org/conda-forge/linux-64/sccache-0.9.1-h159367c_1.conda
   sha256: 72206bbd84d652f10e7466ae3a59b3a3da371a0235ffbbdb14680ffffc32ede6
   md5: 0f36d8b84c645c45ba32961bd0eacae9
@@ -1306,8 +1164,6 @@ packages:
   - openssl >=3.4.0,<4.0a0
   constrains:
   - __glibc >=2.17
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0
   license_family: APACHE
@@ -1320,8 +1176,6 @@ packages:
   - __osx >=11.0
   constrains:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: Apache-2.0
   license_family: APACHE
@@ -1342,8 +1196,6 @@ packages:
   md5: 4a2cac04f86a4540b8c9b8d8f597848f
   depends:
   - openssl >=3.0.0,<4.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1367,8 +1219,6 @@ packages:
   - __osx >=11.0
   - libcxx >=17.0.0.a0
   - ncurses >=6.5,<7.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: NCSA
   license_family: MIT
@@ -1383,8 +1233,6 @@ packages:
   - openssl >=3.3.2,<4.0a0
   constrains:
   - __glibc >=2.17
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1398,8 +1246,6 @@ packages:
   - openssl >=3.3.2,<4.0a0
   constrains:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1411,8 +1257,6 @@ packages:
   depends:
   - libgcc-ng >=12
   - libzlib >=1.2.13,<2.0.0a0
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: TCL
   license_family: BSD
@@ -1423,8 +1267,6 @@ packages:
   md5: b50a57ba89c32b62428b71a875291c9b
   depends:
   - libzlib >=1.2.13,<2.0.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: TCL
   license_family: BSD
@@ -1447,8 +1289,6 @@ packages:
   - libstdcxx >=13
   - python >=3.13.0rc1,<3.14.0a0
   - python_abi 3.13.* *_cp313
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1464,8 +1304,6 @@ packages:
   - python >=3.13.0rc1,<3.14.0a0
   - python >=3.13.0rc1,<3.14.0a0 *_cp313
   - python_abi 3.13.* *_cp313
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1489,8 +1327,6 @@ packages:
   md5: 4cb3ad778ec2d5a7acbdf254eb1c42ae
   depends:
   - libgcc-ng >=9.4.0
-  arch: x86_64
-  platform: linux
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1499,8 +1335,6 @@ packages:
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h3422bc3_2.tar.bz2
   sha256: 93181a04ba8cfecfdfb162fc958436d868cc37db504c58078eab4c1a3e57fbb7
   md5: 4bb3f014845110883a3c5ee811fd84b4
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: MIT
   license_family: MIT
@@ -1512,8 +1346,6 @@ packages:
   depends:
   - __osx >=11.0
   - libzlib >=1.2.13,<2.0.0a0
-  arch: arm64
-  platform: osx
   channel: https://fast.prefix.dev/conda-forge
   license: BSD-3-Clause
   license_family: BSD

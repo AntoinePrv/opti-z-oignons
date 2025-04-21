@@ -100,11 +100,11 @@ impl Assignor {
         }
     }
 
-    pub fn persons(&self) -> impl Iterator<Item = PersonIdx> {
+    pub fn persons(&self) -> impl Iterator<Item = PersonIdx> + use<> {
         (0..self.person_count() as u32).into_iter()
     }
 
-    pub fn tables(&self) -> impl Iterator<Item = TableIdx> {
+    pub fn tables(&self) -> impl Iterator<Item = TableIdx> + use<> {
         (0..self.table_count() as Size).into_iter()
     }
 

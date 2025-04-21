@@ -2,7 +2,7 @@
 name = "group-assignment"
 version = "0.0.1"
 authors = ["AntoinePrv <AntoinePrv@users.noreply.github.com>"]
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 dioxus = { version = "0.6.0", features = ["router"] }
