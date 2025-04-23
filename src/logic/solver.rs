@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 
+use petgraph::visit::EdgeRef;
+
 use super::model::{self, RelationStrength};
 
 type Size = u32;
@@ -23,9 +25,11 @@ pub enum SolverError {
     Unknown,
 }
 
+type RelationStrengthValues = [Cost; RelationStrength::len()];
+
 #[derive(Clone, Debug)]
 pub struct SolverSettings {
-    pub relation_values: [Cost; RelationStrength::len()],
+    pub relation_values: RelationStrengthValues,
 }
 
 pub fn solve(tables: &model::Tables, tribe: &model::Tribe) -> SolverResult<model::Assignment> {
@@ -171,6 +175,10 @@ impl Assignor {
         self.person_assignment[person as usize] != Self::UNASSIGNED_PERSON
     }
 
+    pub fn can_assign(&mut self, person: PersonIdx, table: TableIdx) -> bool {
+        !self.person_is_seated(person) && !self.table_is_full(table)
+    }
+
     pub fn assign(&mut self, person: PersonIdx, table: TableIdx) -> bool {
         if self.person_is_seated(person) {
             return false;
@@ -205,13 +213,79 @@ impl Assignor {
     }
 }
 
-type RelationGraph<'a> = petgraph::csr::Csr<(), RelationStrength, petgraph::Undirected, PersonIdx>;
+type RelationGraph = petgraph::csr::Csr<(), RelationStrength, petgraph::Undirected, PersonIdx>;
+
+#[derive(Clone, Debug)]
+struct AssignorWithCosts {
+    assignor: Assignor,
+    relations: RelationGraph,
+    relations_values: RelationStrengthValues,
+    table_costs: Vec</* TableIdx */ Cost>,
+}
+
+impl AssignorWithCosts {
+    pub fn new(
+        assignor: Assignor,
+        relations: RelationGraph,
+        relations_values: RelationStrengthValues,
+    ) -> Self {
+        let n_tables = assignor.table_count();
+        Self {
+            assignor,
+            relations,
+            relations_values,
+            table_costs: vec![0.0; n_tables as usize],
+        }
+    }
+
+    pub fn table_cost(&self, table: TableIdx) -> Cost {
+        self.table_costs[table as usize]
+    }
+
+    pub fn assign_with_cost(&mut self, person: PersonIdx, table: TableIdx, cost: Cost) -> bool {
+        if self.assignor.assign(person, table) {
+            self.table_costs[table as usize] += cost;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn assignment_cost(&self, person: PersonIdx, table: TableIdx) -> Cost {
+        let table_persons = self.assignor.table_persons(table);
+        self.relations
+            .edges(person)
+            .filter(|e| table_persons.contains(&e.target()))
+            .map(|e| self.relations_values[*e.weight() as usize])
+            .sum()
+    }
+}
+
+impl AsRef<Assignor> for AssignorWithCosts {
+    fn as_ref(&self) -> &Assignor {
+        &self.assignor
+    }
+}
+
+impl std::ops::Deref for AssignorWithCosts {
+    type Target = Assignor;
+
+    fn deref(&self) -> &Self::Target {
+        &self.assignor
+    }
+}
+
+impl AsRef<RelationGraph> for AssignorWithCosts {
+    fn as_ref(&self) -> &RelationGraph {
+        &self.relations
+    }
+}
 
 #[derive(Clone, Debug)]
 struct Solver<'a> {
     assignor: Assignor,
     mapping: BackwardMapping<'a>,
-    relations: RelationGraph<'a>,
+    relations: RelationGraph,
     settings: SolverSettings,
 }
 
@@ -235,7 +309,7 @@ impl<'pb> Solver<'pb> {
     pub fn build_relations<'a>(
         tribe: &'a model::Tribe,
     ) -> SolverResult<(
-        RelationGraph<'a>,
+        RelationGraph,
         Vec</* PersonIdx, */ &'a model::PersonNameRef>,
     )> {
         if tribe.persons_count() >= (Size::MAX as usize) {
@@ -369,6 +443,60 @@ mod tests {
                 (3, &[11u32, 12, 13, 14 /* free, free */,] as &[u32]),
             ]
         );
+    }
+
+    #[test]
+    fn test_assignor_with_costs() {
+        let tables = vec![2, 4];
+        let n_persons: Size = 5;
+
+        let mut assignor = {
+            let assignor = Assignor::from_table_sizes(tables.clone(), n_persons);
+
+            let mut relations = RelationGraph::with_nodes(n_persons as usize);
+            relations.add_edge(0, 1, RelationStrength::Hates);
+            relations.add_edge(0, 2, RelationStrength::Dislikes);
+            relations.add_edge(0, 3, RelationStrength::Likes);
+            relations.add_edge(0, 4, RelationStrength::Loves);
+            relations.add_edge(1, 2, RelationStrength::Loves);
+            relations.add_edge(1, 3, RelationStrength::Likes);
+            relations.add_edge(1, 4, RelationStrength::Dislikes);
+
+            let relations_values = [7.0, 1.0, -3.0, -9.0];
+
+            AssignorWithCosts::new(assignor, relations, relations_values)
+        };
+
+        assert_eq!(assignor.person_count(), n_persons);
+        assert_eq!(assignor.table_count() as usize, tables.len());
+
+        for t in assignor.tables() {
+            assert_eq!(assignor.table_cost(t), 0.0);
+            for p in assignor.persons() {
+                let cost = assignor.assignment_cost(p, t);
+                assert_eq!(cost, 0.0);
+            }
+        }
+
+        let assigned = assignor.assign_with_cost(0, 0, 0.0);
+        assert!(assigned);
+        assert!(!assignor.assign_with_cost(0, 0, 0.0));
+        let assigned = assignor.assign_with_cost(1, 1, 0.0);
+        assert!(assigned);
+        assert!(!assignor.assign_with_cost(1, 0, 0.0));
+        assert!(!assignor.assign_with_cost(1, 1, 0.0));
+
+        assert_eq!(assignor.assignment_cost(2, 0), 1.0);
+        assert_eq!(assignor.assignment_cost(2, 1), -9.0);
+        let assigned = assignor.assign_with_cost(2, 0, 1.0);
+        assert!(assigned);
+        // Unchanged the cost of new table is returned
+        assert_eq!(assignor.assignment_cost(2, 1), -9.0);
+
+        // Table 0 is full
+        assert_eq!(assignor.assignment_cost(3, 0), -3.0);
+        let assigned = assignor.assign_with_cost(3, 0, -3.0);
+        assert!(!assigned);
     }
 
     #[test]
