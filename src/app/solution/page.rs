@@ -1,8 +1,8 @@
 use dioxus::prelude::*;
 
 use crate::{
-    logic::{model::Assignment, solver::SolverError},
     SolutionState,
+    logic::{model::Assignment, solver::SolverError},
 };
 
 #[component]

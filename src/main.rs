@@ -4,9 +4,9 @@ pub mod name_generator;
 
 use dioxus::prelude::*;
 
+use app::NotFound;
 use app::problem::Page as ProblemPage;
 use app::solution::Page as SolutionPage;
-use app::NotFound;
 use logic::{
     model::{Assignment, Tables, Tribe},
     solver::SolverError,
