@@ -40,7 +40,7 @@ pub fn solve(tables: &model::Tables, tribe: &model::Tribe) -> SolverResult<model
             relation_values: [-4.0, -1.0, 1.0, 4.0],
         },
     )?;
-    solver.fake_solve()
+    solver.solve()
 }
 
 #[derive(Clone, Debug)]
@@ -194,23 +194,6 @@ impl Assignor {
             false
         }
     }
-
-    fn dummy_assign(&mut self) {
-        let mut tables = self.tables();
-        let mut t = tables.next();
-        let mut persons = self.persons();
-        let mut p = persons.next();
-
-        while t.is_some() && p.is_some() {
-            if self.table_is_full(t.unwrap()) {
-                t = tables.next();
-            } else {
-                let assigned = self.assign(p.unwrap(), t.unwrap());
-                assert!(assigned);
-                p = persons.next();
-            }
-        }
-    }
 }
 
 type RelationGraph = petgraph::csr::Csr<(), RelationStrength, petgraph::Undirected, PersonIdx>;
@@ -283,9 +266,8 @@ impl AsRef<RelationGraph> for AssignorWithCosts {
 
 #[derive(Clone, Debug)]
 struct Solver<'a> {
-    assignor: Assignor,
+    assignor: AssignorWithCosts,
     mapping: BackwardMapping<'a>,
-    relations: RelationGraph,
     settings: SolverSettings,
 }
 
@@ -298,10 +280,11 @@ impl<'pb> Solver<'pb> {
         let (table_names, table_sizes) = Self::build_tables(tables)?;
         let (relations, persons) = Self::build_relations(tribe)?;
 
+        let assignor = Assignor::from_table_sizes(table_sizes, tribe.persons_count() as Size);
+
         Ok(Self {
-            assignor: Assignor::from_table_sizes(table_sizes, tribe.persons_count() as Size),
+            assignor: AssignorWithCosts::new(assignor, relations, settings.relation_values),
             mapping: BackwardMapping::new(table_names, persons),
-            relations,
             settings,
         })
     }
@@ -383,14 +366,25 @@ impl<'pb> Solver<'pb> {
         out
     }
 
-    pub fn fake_solve(&mut self) -> SolverResult<model::Assignment> {
+    pub fn solve(&mut self) -> SolverResult<model::Assignment> {
         if self.assignor.seat_count() < self.assignor.person_count() {
             return Err(SolverError::NoSolution(
                 "there is not enough sitting space".into(),
             ));
         }
 
-        self.assignor.dummy_assign();
+        for person in self.assignor.persons() {
+            let (cost, table) = self
+                .assignor
+                .tables()
+                .filter(|t| !self.assignor.table_is_full(*t))
+                .map(|t| (self.assignor.assignment_cost(person, t), t))
+                .min_by(|a, b| a.partial_cmp(b).unwrap())
+                .unwrap_or((0.0, 0));
+
+            self.assignor.assign_with_cost(person, table, cost);
+        }
+
         Ok(self.assignment())
     }
 }
@@ -401,6 +395,23 @@ mod tests {
 
     use super::super::examples;
     use super::*;
+
+    fn assign_in_order(assignor: &mut Assignor) {
+        let mut tables = assignor.tables();
+        let mut t = tables.next();
+        let mut persons = assignor.persons();
+        let mut p = persons.next();
+
+        while t.is_some() && p.is_some() {
+            if assignor.table_is_full(t.unwrap()) {
+                t = tables.next();
+            } else {
+                let assigned = assignor.assign(p.unwrap(), t.unwrap());
+                assert!(assigned);
+                p = persons.next();
+            }
+        }
+    }
 
     #[test]
     fn test_backward_mapping() {
@@ -433,7 +444,7 @@ mod tests {
             vec![(0, &[] as &[u32]), (1, &[]), (2, &[]), (3, &[]),]
         );
 
-        assignor.dummy_assign();
+        assign_in_order(&mut assignor);
         assert_eq!(
             assignor.table_assignment().collect::<Vec<_>>(),
             vec![
@@ -509,7 +520,7 @@ mod tests {
                 relation_values: [-4.0, -1.0, 1.0, 4.0],
             },
         )?;
-        let assignment = solver.fake_solve()?;
+        let assignment = solver.solve()?;
 
         assert!(assignment.is_empty());
 
@@ -526,7 +537,7 @@ mod tests {
                 relation_values: [-4.0, -1.0, 1.0, 4.0],
             },
         )?;
-        let assignment = solver.fake_solve()?;
+        let assignment = solver.solve()?;
 
         assert_eq!(assignment.len(), tables.len());
         for t in tables.keys() {
