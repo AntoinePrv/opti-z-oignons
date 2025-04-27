@@ -8,13 +8,24 @@ platforms = ["osx-arm64", "linux-64"]
 
 [environments]
 default = { solve-group = "default" }
-dev = { features = ["test", "dev", "build"], solve-group = "default" }
+dev = { features = ["build", "css", "test", "dev"], solve-group = "default" }
 
 [feature.build.dependencies]
 sccache = ">=0.8.1"
 c-compiler = ">=1.7.0,<2"
 rust = ">=1.85.0"
 rust-std-wasm32-unknown-unknown = ">=1.83.0"
+
+[feature.css.dependencies]
+nodejs = "*"
+
+[feature.css.tasks.init-tailwind]
+cmd = "npm install tailwindcss @tailwindcss/cli"
+inputs = ["package.json", "package-lock.json"]
+outputs = ["node_modules/"]
+[feature.css.tasks.tailwind]
+cmd = "npx tailwindcss"
+depends-on = ["init-tailwind"]
 
 [feature.build.activation.env]
 RUSTC_WRAPPER = "sccache"
@@ -47,8 +58,12 @@ sccache = ">=0.8.1"
 dioxus = ">=0.6.3"
 
 [feature.dev.tasks]
-dx = "dx"
 cargo = "cargo"
+dx = "dx"
+serve-dx = "dx serve"
+serve-tailwind = { depends-on = ["init-tailwind"], cmd = """
+npx tailwindcss --input ./assets/main.tw.css --output ./assets/main.css --watch
+"""}
 
 [feature.dev.activation.env]
 RUSTC_WRAPPER = "sccache"
