@@ -63,7 +63,7 @@ dx = "dx"
 serve-dx = "dx serve"
 serve-tailwind = { depends-on = ["init-tailwind"], cmd = """
 npx tailwindcss --input ./assets/main.tw.css --output ./assets/main.css --watch
-"""}
+""" }
 
 [feature.dev.activation.env]
 RUSTC_WRAPPER = "sccache"

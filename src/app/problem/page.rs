@@ -7,7 +7,6 @@ pub fn Page() -> Element {
     let pb: crate::ProblemSignal = use_context();
 
     rsx! {
-        h1 { "Group Assignment" }
         Schema { tables: pb.tables, tribe: pb.tribe }
         ShowMeHow { tables: pb.tables, tribe: pb.tribe }
         TableList { tables: pb.tables }
