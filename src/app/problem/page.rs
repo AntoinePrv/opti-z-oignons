@@ -9,12 +9,20 @@ pub fn Page() -> Element {
     rsx! {
         Schema { tables: pb.tables, tribe: pb.tribe }
         ShowMeHow { tables: pb.tables, tribe: pb.tribe }
-        TableList { tables: pb.tables }
-        TableInput { tables: pb.tables }
-        PersonList { tribe: pb.tribe }
-        PersonInput { tribe: pb.tribe }
-        RelationList { tribe: pb.tribe }
-        RelationInput { tribe: pb.tribe }
+        div { class: "flex",
+            div { class: "basis-1/3",
+                TableList { tables: pb.tables }
+                TableInput { tables: pb.tables }
+            }
+            div { class: "basis-1/3",
+                PersonList { tribe: pb.tribe }
+                PersonInput { tribe: pb.tribe }
+            }
+            div { class: "basis-1/3",
+                RelationList { tribe: pb.tribe }
+                RelationInput { tribe: pb.tribe }
+            }
+        }
     }
 }
 
@@ -47,14 +55,16 @@ fn fmt_table(seats: u32) -> String {
 fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
     // TODO add hover for names
     rsx! {
-        ul {
-            for (_name , kind) in tables.read().iter() {
-                li { key: _name, "{fmt_table(kind.n_seats)}" }
+        div { class: "flex gap-8",
+            ul { class: "basis-1/2 flex flex-wrap justify-center gap-2",
+                for (_name , kind) in tables.read().iter() {
+                    li { key: _name, "{fmt_table(kind.n_seats)}" }
+                }
             }
-        }
-        ul {
-            for person in tribe.read().persons() {
-                li { key: "{person}", "🐷" }
+            ul { class: "basis-1/2 flex flex-wrap justify-center gap-2",
+                for person in tribe.read().persons() {
+                    li { key: "{person}", "🐷" }
+                }
             }
         }
     }
@@ -67,7 +77,7 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
         ul {
             for person in tribe.read().persons() {
                 li { key: "{person}",
-                    p { "{person}" }
+                    span { "{person}" }
                     button {
                         onclick: {
                             let person = person.to_owned();
@@ -121,7 +131,7 @@ fn TableList(tables: Signal<Tables>) -> Element {
         ul {
             for (name , table) in tables.read().iter() {
                 li { key: name,
-                    p { "Table {name} with {table.n_seats} seats" }
+                    span { "Table {name} with {table.n_seats} seats" }
                     button {
                         onclick: {
                             let name = name.to_owned();
@@ -194,7 +204,7 @@ fn RelationList(tribe: Signal<Tribe>) -> Element {
             for (p1 , p2 , strenght) in tribe.read().relations() {
                 li {
                     // TODO missing key
-                    p { "{p1} {strenght} {p2}" }
+                    span { "{p1} {strenght} {p2}" }
                     button {
                         onclick: {
                             {
