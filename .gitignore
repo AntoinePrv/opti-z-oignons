@@ -8,3 +8,6 @@
 
 # Node modules used by tailwind
 node_modules/
+
+# Tailwind generated files
+/assets/main.css
