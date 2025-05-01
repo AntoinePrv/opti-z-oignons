@@ -6,21 +6,56 @@ use crate::logic::model::{RelationStrength, TableType, Tables, Tribe};
 pub fn Page() -> Element {
     let pb: crate::ProblemSignal = use_context();
 
+    // Fill some data in Debug mode
+    #[cfg(debug_assertions)]
+    {
+        let (ex_tribe, ex_tables) = crate::logic::examples::harry_potter();
+        pb.tribe.clone().set(ex_tribe);
+        pb.tables.clone().set(ex_tables);
+    }
+
     rsx! {
         Schema { tables: pb.tables, tribe: pb.tribe }
         ShowMeHow { tables: pb.tables, tribe: pb.tribe }
-        div { class: "flex",
+        div { class: "p-8 flex gap-8",
             div { class: "basis-1/3",
-                TableList { tables: pb.tables }
-                TableInput { tables: pb.tables }
+                SectionCard {
+                    title: rsx! {
+                        h2 { "Tables" }
+                    },
+                    body: rsx! {
+                        TableList { tables: pb.tables }
+                    },
+                    input: rsx! {
+                        TableInput { tables: pb.tables }
+                    },
+                }
             }
             div { class: "basis-1/3",
-                PersonList { tribe: pb.tribe }
-                PersonInput { tribe: pb.tribe }
+                SectionCard {
+                    title: rsx! {
+                        h2 { "Persons" }
+                    },
+                    body: rsx! {
+                        PersonList { tribe: pb.tribe }
+                    },
+                    input: rsx! {
+                        PersonInput { tribe: pb.tribe }
+                    },
+                }
             }
             div { class: "basis-1/3",
-                RelationList { tribe: pb.tribe }
-                RelationInput { tribe: pb.tribe }
+                SectionCard {
+                    title: rsx! {
+                        h2 { "Relations" }
+                    },
+                    body: rsx! {
+                        RelationList { tribe: pb.tribe }
+                    },
+                    input: rsx! {
+                        RelationInput { tribe: pb.tribe }
+                    },
+                }
             }
         }
     }
@@ -30,6 +65,7 @@ pub fn Page() -> Element {
 fn ShowMeHow(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
     rsx! {
         button {
+            class: "btn",
             onclick: {
                 move |_| {
                     let (ex_tribe, ex_tables) = crate::logic::examples::harry_potter();
@@ -71,21 +107,40 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
 }
 
 #[component]
+fn SectionCard(title: Element, body: Element, input: Element) -> Element {
+    rsx! {
+        div { class: "card bg-base-100 p-4 shadow-sm",
+            div { class: "card-title", {title} }
+            div { class: "card-body", {body} }
+            div { class: "card-action", {input} }
+        }
+    }
+}
+
+#[component]
 fn PersonList(tribe: Signal<Tribe>) -> Element {
     rsx! {
-        p { "Persons:" }
-        ul {
-            for person in tribe.read().persons() {
-                li { key: "{person}",
-                    span { "{person}" }
-                    button {
-                        onclick: {
-                            let person = person.to_owned();
-                            move |_| {
-                                tribe.write().remove_person(&person);
+        table { class: "table",
+            thead {
+                th { "Name" }
+                th { class: "w-4" }
+            }
+            tbody {
+                for person in tribe.read().persons() {
+                    tr {
+                        td { "{person}" }
+                        td {
+                            button {
+                                class: "btn btn-xs",
+                                onclick: {
+                                    let person = person.to_owned();
+                                    move |_| {
+                                        tribe.write().remove_person(&person);
+                                    }
+                                },
+                                "X"
                             }
-                        },
-                        "❌"
+                        }
                     }
                 }
             }
@@ -119,7 +174,7 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
                 r#type: "text",
                 minlength: 1,
             }
-            button { r#type: "submit", "✔️" }
+            button { class: "btn", r#type: "submit", "✔️" }
         }
     }
 }
@@ -127,19 +182,29 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
 #[component]
 fn TableList(tables: Signal<Tables>) -> Element {
     rsx! {
-        p { "Tables:" }
-        ul {
-            for (name , table) in tables.read().iter() {
-                li { key: name,
-                    span { "Table {name} with {table.n_seats} seats" }
-                    button {
-                        onclick: {
-                            let name = name.to_owned();
-                            move |_| {
-                                tables.write().remove(&name);
+        table { class: "table",
+            thead {
+                th { "Name" }
+                th { "Seats" }
+                th { class: "w-4" }
+            }
+            tbody {
+                for (name , table) in tables.read().iter() {
+                    tr {
+                        td { "{name}" }
+                        td { "{table.n_seats}" }
+                        td {
+                            button {
+                                class: "btn btn-xs",
+                                onclick: {
+                                    let name = name.to_owned();
+                                    move |_| {
+                                        tables.write().remove(&name);
+                                    }
+                                },
+                                "X"
                             }
-                        },
-                        "❌"
+                        }
                     }
                 }
             }
@@ -191,7 +256,7 @@ fn TableInput(tables: Signal<Tables>) -> Element {
                 step: 1,
                 value: 1,
             }
-            button { r#type: "submit", "Add tables" }
+            button { class: "btn", r#type: "submit", "Add tables" }
         }
     }
 }
@@ -199,23 +264,32 @@ fn TableInput(tables: Signal<Tables>) -> Element {
 #[component]
 fn RelationList(tribe: Signal<Tribe>) -> Element {
     rsx! {
-        p { "Relations:" }
-        ul {
-            for (p1 , p2 , strenght) in tribe.read().relations() {
-                li {
-                    // TODO missing key
-                    span { "{p1} {strenght} {p2}" }
-                    button {
-                        onclick: {
-                            {
-                                let p1 = p1.to_owned();
-                                let p2 = p2.to_owned();
-                                move |_| {
-                                    tribe.write().remove_relation(&p1, &p2);
-                                }
+        table { class: "table",
+            thead {
+                th { "Person" }
+                th { "Strength" }
+                th { "Person" }
+                th { class: "w-4" }
+            }
+            tbody {
+                for (p1 , p2 , strength) in tribe.read().relations() {
+                    tr {
+                        td { "{p1}" }
+                        td { "{strength}" }
+                        td { "{p2}" }
+                        td {
+                            button {
+                                class: "btn btn-xs",
+                                onclick: {
+                                    let p1 = p1.to_owned();
+                                    let p2 = p2.to_owned();
+                                    move |_| {
+                                        tribe.write().remove_relation(&p1, &p2);
+                                    }
+                                },
+                                "X"
                             }
-                        },
-                        "❌"
+                        }
                     }
                 }
             }
@@ -289,7 +363,7 @@ fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
                 minlength: 1,
             }
 
-            button { r#type: "submit", "Add a relation" }
+            button { class: "btn", r#type: "submit", "Add a relation" }
         }
     }
 }
