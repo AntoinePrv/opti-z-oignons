@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
 use crate::logic::model::{RelationStrength, TableType, Tables, Tribe};
 
@@ -118,6 +119,18 @@ fn SectionCard(title: Element, body: Element, input: Element) -> Element {
 }
 
 #[component]
+fn TableTrashIcon() -> Element {
+    rsx! {
+        Icon {
+            class: "stroke-error",
+            width: 15,
+            height: 15,
+            icon: icons::LdTrash2,
+        }
+    }
+}
+
+#[component]
 fn PersonList(tribe: Signal<Tribe>) -> Element {
     rsx! {
         table { class: "table",
@@ -131,14 +144,14 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
                         td { "{person}" }
                         td {
                             button {
-                                class: "btn btn-xs",
+                                class: "btn btn-xs p-1",
                                 onclick: {
                                     let person = person.to_owned();
                                     move |_| {
                                         tribe.write().remove_person(&person);
                                     }
                                 },
-                                "X"
+                                TableTrashIcon {}
                             }
                         }
                     }
@@ -202,7 +215,7 @@ fn TableList(tables: Signal<Tables>) -> Element {
                                         tables.write().remove(&name);
                                     }
                                 },
-                                "X"
+                                TableTrashIcon {}
                             }
                         }
                     }
@@ -287,7 +300,7 @@ fn RelationList(tribe: Signal<Tribe>) -> Element {
                                         tribe.write().remove_relation(&p1, &p2);
                                     }
                                 },
-                                "X"
+                                TableTrashIcon {}
                             }
                         }
                     }
