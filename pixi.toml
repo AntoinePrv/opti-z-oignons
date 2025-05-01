@@ -19,6 +19,8 @@ rust-std-wasm32-unknown-unknown = ">=1.83.0"
 [feature.css.dependencies]
 nodejs = "*"
 
+[feature.css.tasks.npm]
+cmd = "npm"
 [feature.css.tasks.init-tailwind]
 cmd = "npm install tailwindcss @tailwindcss/cli"
 inputs = ["package.json", "package-lock.json"]
