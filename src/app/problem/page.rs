@@ -35,32 +35,31 @@ pub fn Page() -> Element {
                     body: rsx! {
                         TableList { tables: pb.tables }
                     },
-                    input: rsx! {},
                 }
             }
             div { class: "basis-1/3",
                 SectionCard {
                     title: rsx! {
-                        h2 { "Persons" }
+                        div { class: "w-full flex justify-between",
+                            h2 { "Persons" }
+                            PersonInput { tribe: pb.tribe }
+                        }
                     },
                     body: rsx! {
                         PersonList { tribe: pb.tribe }
                     },
-                    input: rsx! {
-                        PersonInput { tribe: pb.tribe }
-                    },
                 }
             }
             div { class: "basis-1/3",
                 SectionCard {
                     title: rsx! {
-                        h2 { "Relations" }
+                        div { class: "w-full flex justify-between",
+                            h2 { "Relations" }
+                            RelationInput { tribe: pb.tribe }
+                        }
                     },
                     body: rsx! {
                         RelationList { tribe: pb.tribe }
-                    },
-                    input: rsx! {
-                        RelationInput { tribe: pb.tribe }
                     },
                 }
             }
@@ -126,13 +125,12 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
 }
 
 #[component]
-fn SectionCard(title: Element, body: Element, input: Element) -> Element {
+fn SectionCard(title: Element, body: Element) -> Element {
     rsx! {
         div { class: "card bg-base-100 shadow-sm",
             div { class: "card-body",
                 div { class: "card-title", {title} }
                 div { {body} }
-                div { class: "card-action", {input} }
             }
         }
     }
@@ -237,28 +235,38 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
     const PERSON_NAME_ID: &'static str = "person_name";
 
     rsx! {
-        // TODO: add "tribe" for auto conflicts
-        // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist
-        form {
-            onsubmit: move |event| {
-                let name_input = event
-                    .data
-                    .values()
-                    .remove(PERSON_NAME_ID)
-                    .map(|val| val.as_value());
-                if let Some(name) = name_input {
-                    tribe.write().add_person(name);
+        SectionAdd { title: "Add a new person",
+            // TODO: add "tribe" for auto conflicts
+            // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist
+            form {
+                class: "mx-auto space-y-2",
+                onsubmit: move |event| {
+                    let name_input = event
+                        .data
+                        .values()
+                        .remove(PERSON_NAME_ID)
+                        .map(|val| val.as_value());
+                    if let Some(name) = name_input {
+                        tribe.write().add_person(name);
+                    }
+                },
+                label { r#for: PERSON_NAME_ID, class: "floating-label",
+                    input {
+                        id: PERSON_NAME_ID,
+                        name: PERSON_NAME_ID,
+                        r#type: "text",
+                        minlength: 1,
+                        class: "input focus:outline-none w-full",
+                        placeholder: "Person name",
+                    }
+                    span { "Person name" }
                 }
-            },
-            label { r#for: PERSON_NAME_ID, "Name" }
-            input {
-                id: PERSON_NAME_ID,
-                name: PERSON_NAME_ID,
-                placeholder: "Add a person",
-                r#type: "text",
-                minlength: 1,
+                button {
+                    class: "btn btn-primary ml-auto block w-32",
+                    r#type: "submit",
+                    "Add"
+                }
             }
-            button { class: "btn", r#type: "submit", "✔️" }
         }
     }
 }
@@ -399,64 +407,78 @@ fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
     const RELATION_PERSON_DATALIST_ID: &'static str = "relation_person_datalist";
 
     rsx! {
-        form {
-            onsubmit: move |event| {
-                let mut data = event.data.values();
-                let person1 = data.remove(RELATION_PERSON_1_ID).map(|val| val.as_value());
-                let person2 = data.remove(RELATION_PERSON_2_ID).map(|val| val.as_value());
-                let strength = data
-                    .remove(RELATION_STRENGTH_ID)
-                    .map(|val| val.as_value())
-                    .and_then(|val| val.parse::<usize>().ok())
-                    .and_then(|val| RelationStrength::from_repr(val));
-                if let Some(((person1, person2), strength)) = person1.zip(person2).zip(strength)
-                {
-                    tribe.write().add_relation(person1, person2, strength);
+        SectionAdd { title: "Add a relation between two persons",
+            form {
+                class: "mx-auto space-y-2",
+                onsubmit: move |event| {
+                    let mut data = event.data.values();
+                    let person1 = data.remove(RELATION_PERSON_1_ID).map(|val| val.as_value());
+                    let person2 = data.remove(RELATION_PERSON_2_ID).map(|val| val.as_value());
+                    let strength = data
+                        .remove(RELATION_STRENGTH_ID)
+                        .map(|val| val.as_value())
+                        .and_then(|val| val.parse::<usize>().ok())
+                        .and_then(|val| RelationStrength::from_repr(val));
+                    if let Some(((person1, person2), strength)) = person1.zip(person2).zip(strength)
+                    {
+                        tribe.write().add_relation(person1, person2, strength);
+                    }
+                },
+
+                datalist { id: RELATION_PERSON_DATALIST_ID,
+                    for p in tribe.read().persons() {
+                        option { value: "{p}" }
+                    }
                 }
-            },
+                label { r#for: RELATION_PERSON_1_ID, class: "floating-label",
+                    input {
+                        id: RELATION_PERSON_1_ID,
+                        name: RELATION_PERSON_1_ID,
+                        r#type: "text",
+                        list: RELATION_PERSON_DATALIST_ID,
+                        minlength: 1,
+                        class: "input focus:outline-none w-full",
+                        placeholder: "First person name",
+                    }
+                    span { "First Person name" }
+                }
+                label { r#for: RELATION_STRENGTH_ID, "Relation" }
+                input {
+                    id: RELATION_STRENGTH_ID,
+                    name: RELATION_STRENGTH_ID,
+                    r#type: "range",
+                    list: RELATION_STRENGTH_DATALIST_ID,
+                    min: RelationStrength::min() as usize,
+                    max: RelationStrength::max() as usize,
+                    step: 1,
+                    value: RelationStrength::max() as usize,
+                    class: "range range-primary range-xs",
+                }
+                // TODO: labels can be shown with CSS
+                datalist { id: RELATION_STRENGTH_DATALIST_ID,
+                    for strength in RelationStrength::iter() {
+                        option { value: strength as usize, label: "{strength}" }
+                    }
+                }
 
-            label { r#for: RELATION_PERSON_1_ID, "First Person" }
-            input {
-                id: RELATION_PERSON_1_ID,
-                name: RELATION_PERSON_1_ID,
-                r#type: "text",
-                list: RELATION_PERSON_DATALIST_ID,
-                minlength: 1,
-            }
-            datalist { id: RELATION_PERSON_DATALIST_ID,
-                for p in tribe.read().persons() {
-                    option { value: "{p}" }
+                label { r#for: RELATION_PERSON_2_ID, class: "floating-label",
+                    input {
+                        id: RELATION_PERSON_2_ID,
+                        name: RELATION_PERSON_2_ID,
+                        r#type: "text",
+                        list: RELATION_PERSON_DATALIST_ID,
+                        minlength: 1,
+                        class: "input focus:outline-none w-full",
+                        placeholder: "Second person name",
+                    }
+                    span { "Second Person name" }
+                }
+                button {
+                    class: "btn btn-primary ml-auto block w-32",
+                    r#type: "submit",
+                    "Add"
                 }
             }
-
-            label { r#for: RELATION_STRENGTH_ID, "Relation" }
-            input {
-                id: RELATION_STRENGTH_ID,
-                name: RELATION_STRENGTH_ID,
-                r#type: "range",
-                list: RELATION_STRENGTH_DATALIST_ID,
-                min: RelationStrength::min() as usize,
-                max: RelationStrength::max() as usize,
-                step: 1,
-                value: RelationStrength::max() as usize,
-            }
-            // TODO: labels can be shown with CSS
-            datalist { id: RELATION_STRENGTH_DATALIST_ID,
-                for strength in RelationStrength::iter() {
-                    option { value: strength as usize, label: "{strength}" }
-                }
-            }
-
-            label { r#for: RELATION_PERSON_2_ID, "Person 2" }
-            input {
-                id: RELATION_PERSON_2_ID,
-                name: RELATION_PERSON_2_ID,
-                r#type: "text",
-                list: RELATION_PERSON_DATALIST_ID,
-                minlength: 1,
-            }
-
-            button { class: "btn", r#type: "submit", "Add a relation" }
         }
     }
 }
