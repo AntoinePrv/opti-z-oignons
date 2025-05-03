@@ -1,3 +1,4 @@
+use const_format::formatcp;
 use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
@@ -17,19 +18,24 @@ pub fn Page() -> Element {
 
     rsx! {
         Schema { tables: pb.tables, tribe: pb.tribe }
-        ShowMeHow { tables: pb.tables, tribe: pb.tribe }
+        ShowMeHow {
+            class: "fixed bottom-4 right-4 z-50",
+            tables: pb.tables,
+            tribe: pb.tribe,
+        }
         div { class: "p-8 flex gap-8",
             div { class: "basis-1/3",
                 SectionCard {
                     title: rsx! {
-                        h2 { "Tables" }
+                        div { class: "w-full flex justify-between",
+                            h2 { "Tables" }
+                            TableInput { tables: pb.tables }
+                        }
                     },
                     body: rsx! {
                         TableList { tables: pb.tables }
                     },
-                    input: rsx! {
-                        TableInput { tables: pb.tables }
-                    },
+                    input: rsx! {},
                 }
             }
             div { class: "basis-1/3",
@@ -63,10 +69,22 @@ pub fn Page() -> Element {
 }
 
 #[component]
-fn ShowMeHow(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
+fn TableAddIcon() -> Element {
+    rsx! {
+        Icon {
+            class: "stroke-base-content stroke-2",
+            width: 20,
+            height: 20,
+            icon: icons::LdPlus,
+        }
+    }
+}
+
+#[component]
+fn ShowMeHow(tribe: Signal<Tribe>, tables: Signal<Tables>, class: &'static str) -> Element {
     rsx! {
         button {
-            class: "btn",
+            class: format!("btn btn-primary {}", class),
             onclick: {
                 move |_| {
                     let (ex_tribe, ex_tables) = crate::logic::examples::harry_potter();
@@ -110,10 +128,12 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
 #[component]
 fn SectionCard(title: Element, body: Element, input: Element) -> Element {
     rsx! {
-        div { class: "card bg-base-100 p-4 shadow-sm",
-            div { class: "card-title", {title} }
-            div { class: "card-body", {body} }
-            div { class: "card-action", {input} }
+        div { class: "card bg-base-100 shadow-sm",
+            div { class: "card-body",
+                div { class: "card-title", {title} }
+                div { {body} }
+                div { class: "card-action", {input} }
+            }
         }
     }
 }
@@ -144,7 +164,7 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
                         td { "{person}" }
                         td {
                             button {
-                                class: "btn btn-xs p-1",
+                                class: "btn btn-xs aspect-square p-0",
                                 onclick: {
                                     let person = person.to_owned();
                                     move |_| {
@@ -208,7 +228,7 @@ fn TableList(tables: Signal<Tables>) -> Element {
                         td { "{table.n_seats}" }
                         td {
                             button {
-                                class: "btn btn-xs",
+                                class: "btn btn-xs aspect-square p-0",
                                 onclick: {
                                     let name = name.to_owned();
                                     move |_| {
@@ -229,47 +249,87 @@ fn TableList(tables: Signal<Tables>) -> Element {
 fn TableInput(tables: Signal<Tables>) -> Element {
     const TABLE_SEATS_ID: &'static str = "table_seats";
     const TABLE_COUNT_ID: &'static str = "table_count";
+    const ADD_TABLE_MODAL_ID: &'static str = "add_table_modal";
 
     let mut name_generator: Signal<crate::name_generator::NameGenerator> = use_context();
 
     rsx! {
-        form {
-            onsubmit: move |event| {
-                let mut data = event.data.values();
-                let n_seats_input = data
-                    .remove(TABLE_SEATS_ID)
-                    .map(|val| val.as_value())
-                    .and_then(|val| val.parse::<u32>().ok());
-                let count_input = data
-                    .remove(TABLE_COUNT_ID)
-                    .map(|val| val.as_value())
-                    .and_then(|val| val.parse::<usize>().ok());
-                if let Some((n_seats, count)) = n_seats_input.zip(count_input) {
-                    for _ in 0..count {
-                        let name = name_generator.write().next().unwrap();
-                        tables.write().insert(name, TableType { n_seats });
+        button {
+            class: "btn btn-active btn-sm aspect-square p-0",
+            onclick: |_| async move {
+                document::eval(
+                        formatcp!("return {}.showModal() == undefined", ADD_TABLE_MODAL_ID,),
+                    )
+                    .await
+                    .unwrap();
+            },
+            TableAddIcon {}
+        }
+        dialog { id: ADD_TABLE_MODAL_ID, class: "modal",
+            // Dialog content
+            div { class: "modal-box space-y-4",
+                h3 { class: "card-title", "Add multiple tables" }
+                form {
+                    class: "mx-auto space-y-2",
+                    onsubmit: move |event| {
+                        let mut data = event.data.values();
+                        let n_seats_input = data
+                            .remove(TABLE_SEATS_ID)
+                            .map(|val| val.as_value())
+                            .and_then(|val| val.parse::<u32>().ok());
+                        let count_input = data
+                            .remove(TABLE_COUNT_ID)
+                            .map(|val| val.as_value())
+                            .and_then(|val| val.parse::<usize>().ok());
+                        if let Some((n_seats, count)) = n_seats_input.zip(count_input) {
+                            for _ in 0..count {
+                                let name = name_generator.write().next().unwrap();
+                                tables.write().insert(name, TableType { n_seats });
+                            }
+                        }
+                    },
+                    label { r#for: TABLE_SEATS_ID, class: "floating-label",
+                        input {
+                            id: TABLE_SEATS_ID,
+                            name: TABLE_SEATS_ID,
+                            r#type: "number",
+                            min: 0,
+                            step: 1,
+                            class: "input focus:outline-none w-full",
+                            placeholder: "Number of seats",
+                        }
+                        span { "Number of seats" }
+                    }
+                    label { r#for: TABLE_COUNT_ID, class: "floating-label",
+                        input {
+                            id: TABLE_COUNT_ID,
+                            name: TABLE_COUNT_ID,
+                            r#type: "number",
+                            min: 0,
+                            step: 1,
+                            class: "input focus:outline-none w-full",
+                            placeholder: "Number of tables",
+                        }
+                        span { "Number of tables" }
+                    }
+                    button {
+                        class: "btn btn-primary ml-auto block w-32",
+                        r#type: "submit",
+                        "Add"
                     }
                 }
-            },
-            label { r#for: TABLE_SEATS_ID, "Number of seats" }
-            input {
-                id: TABLE_SEATS_ID,
-                name: TABLE_SEATS_ID,
-                r#type: "number",
-                min: 0,
-                step: 1,
-                value: 6,
             }
-            label { r#for: TABLE_COUNT_ID, "Number of tables" }
-            input {
-                id: TABLE_COUNT_ID,
-                name: TABLE_COUNT_ID,
-                r#type: "number",
-                min: 0,
-                step: 1,
-                value: 1,
+            // Closing the dialog/popup/modal form
+            form { method: "dialog", class: "modal-backdrop",
+                button {
+                    onclick: |_| async move {
+                        document::eval(formatcp!("return {}.close() == undefined", ADD_TABLE_MODAL_ID))
+                            .await
+                            .unwrap();
+                    },
+                    "Close"
+                }
             }
-            button { class: "btn", r#type: "submit", "Add tables" }
         }
     }
 }
@@ -292,7 +352,7 @@ fn RelationList(tribe: Signal<Tribe>) -> Element {
                         td { "{p2}" }
                         td {
                             button {
-                                class: "btn btn-xs",
+                                class: "btn btn-xs aspect-square p-0",
                                 onclick: {
                                     let p1 = p1.to_owned();
                                     let p2 = p2.to_owned();
