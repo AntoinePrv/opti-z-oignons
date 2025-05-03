@@ -18,7 +18,7 @@ pub fn Page() -> Element {
 
     rsx! {
         Schema { tables: pb.tables, tribe: pb.tribe }
-        ShowMeHow {
+        ShowMeHowButton {
             class: "fixed bottom-4 right-4 z-50",
             tables: pb.tables,
             tribe: pb.tribe,
@@ -81,7 +81,7 @@ fn TableAddIcon() -> Element {
 }
 
 #[component]
-fn ShowMeHow(tribe: Signal<Tribe>, tables: Signal<Tables>, class: &'static str) -> Element {
+fn ShowMeHowButton(tribe: Signal<Tribe>, tables: Signal<Tables>, class: &'static str) -> Element {
     rsx! {
         button {
             class: format!("btn btn-primary {}", class),
@@ -139,7 +139,7 @@ fn SectionCard(title: Element, body: Element, input: Element) -> Element {
 }
 
 #[component]
-fn TableTrashButton(onclick: EventHandler<MouseEvent>) -> Element {
+fn SectionTrashButton(onclick: EventHandler<MouseEvent>) -> Element {
     rsx! {
         button { class: "btn btn-xs aspect-square p-0", onclick,
             Icon {
@@ -147,6 +147,57 @@ fn TableTrashButton(onclick: EventHandler<MouseEvent>) -> Element {
                 width: 15,
                 height: 15,
                 icon: icons::LdTrash2,
+            }
+        }
+    }
+}
+
+fn safe_html_id(input: &str) -> String {
+    let mut hash: u64 = 5381;
+    for b in input.bytes() {
+        hash = (hash.wrapping_shl(5)).wrapping_add(hash) ^ b as u64;
+    }
+    format!("id{:x}", hash)
+}
+
+#[component]
+fn SectionAdd(title: String, children: Element) -> Element {
+    let modal_id = safe_html_id(title.as_ref());
+
+    rsx! {
+        button {
+            class: "btn btn-sm aspect-square p-0",
+            onclick: {
+                let js_code = format!("return {}.showModal() == undefined", &modal_id);
+                move |_| {
+                    let js_code = js_code.clone();
+                    async move {
+                        document::eval(&js_code).await.unwrap();
+                    }
+                }
+            },
+            TableAddIcon {}
+        }
+        dialog { id: modal_id.clone(), class: "modal",
+            // Dialog content
+            div { class: "modal-box space-y-4",
+                h3 { class: "card-title", {title} }
+                {children}
+            }
+            // Closing the dialog/popup/modal form
+            form { method: "dialog", class: "modal-backdrop",
+                button {
+                    onclick: {
+                        let js_code = format!("return {}.close() == undefined", &modal_id);
+                        move |_| {
+                            let js_code = js_code.clone();
+                            async move {
+                                document::eval(&js_code).await.unwrap();
+                            }
+                        }
+                    },
+                    "Close"
+                }
             }
         }
     }
@@ -165,7 +216,7 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
                     tr {
                         td { "{person}" }
                         td {
-                            TableTrashButton {
+                            SectionTrashButton {
                                 onclick: {
                                     let person = person.to_owned();
                                     move |_| {
@@ -227,7 +278,7 @@ fn TableList(tables: Signal<Tables>) -> Element {
                         td { "{name}" }
                         td { "{table.n_seats}" }
                         td {
-                            TableTrashButton {
+                            SectionTrashButton {
                                 onclick: {
                                     let name = name.to_owned();
                                     move |_| {
@@ -247,85 +298,58 @@ fn TableList(tables: Signal<Tables>) -> Element {
 fn TableInput(tables: Signal<Tables>) -> Element {
     const TABLE_SEATS_ID: &'static str = "table_seats";
     const TABLE_COUNT_ID: &'static str = "table_count";
-    const ADD_TABLE_MODAL_ID: &'static str = "add_table_modal";
 
     let mut name_generator: Signal<crate::name_generator::NameGenerator> = use_context();
 
     rsx! {
-        button {
-            class: "btn btn-active btn-sm aspect-square p-0",
-            onclick: |_| async move {
-                document::eval(
-                        formatcp!("return {}.showModal() == undefined", ADD_TABLE_MODAL_ID,),
-                    )
-                    .await
-                    .unwrap();
-            },
-            TableAddIcon {}
-        }
-        dialog { id: ADD_TABLE_MODAL_ID, class: "modal",
-            // Dialog content
-            div { class: "modal-box space-y-4",
-                h3 { class: "card-title", "Add multiple tables" }
-                form {
-                    class: "mx-auto space-y-2",
-                    onsubmit: move |event| {
-                        let mut data = event.data.values();
-                        let n_seats_input = data
-                            .remove(TABLE_SEATS_ID)
-                            .map(|val| val.as_value())
-                            .and_then(|val| val.parse::<u32>().ok());
-                        let count_input = data
-                            .remove(TABLE_COUNT_ID)
-                            .map(|val| val.as_value())
-                            .and_then(|val| val.parse::<usize>().ok());
-                        if let Some((n_seats, count)) = n_seats_input.zip(count_input) {
-                            for _ in 0..count {
-                                let name = name_generator.write().next().unwrap();
-                                tables.write().insert(name, TableType { n_seats });
-                            }
+        SectionAdd { title: "Add multiple tables",
+            form {
+                class: "mx-auto space-y-2",
+                onsubmit: move |event| {
+                    let mut data = event.data.values();
+                    let n_seats_input = data
+                        .remove(TABLE_SEATS_ID)
+                        .map(|val| val.as_value())
+                        .and_then(|val| val.parse::<u32>().ok());
+                    let count_input = data
+                        .remove(TABLE_COUNT_ID)
+                        .map(|val| val.as_value())
+                        .and_then(|val| val.parse::<usize>().ok());
+                    if let Some((n_seats, count)) = n_seats_input.zip(count_input) {
+                        for _ in 0..count {
+                            let name = name_generator.write().next().unwrap();
+                            tables.write().insert(name, TableType { n_seats });
                         }
-                    },
-                    label { r#for: TABLE_SEATS_ID, class: "floating-label",
-                        input {
-                            id: TABLE_SEATS_ID,
-                            name: TABLE_SEATS_ID,
-                            r#type: "number",
-                            min: 0,
-                            step: 1,
-                            class: "input focus:outline-none w-full",
-                            placeholder: "Number of seats",
-                        }
-                        span { "Number of seats" }
                     }
-                    label { r#for: TABLE_COUNT_ID, class: "floating-label",
-                        input {
-                            id: TABLE_COUNT_ID,
-                            name: TABLE_COUNT_ID,
-                            r#type: "number",
-                            min: 0,
-                            step: 1,
-                            class: "input focus:outline-none w-full",
-                            placeholder: "Number of tables",
-                        }
-                        span { "Number of tables" }
+                },
+                label { r#for: TABLE_SEATS_ID, class: "floating-label",
+                    input {
+                        id: TABLE_SEATS_ID,
+                        name: TABLE_SEATS_ID,
+                        r#type: "number",
+                        min: 0,
+                        step: 1,
+                        class: "input focus:outline-none w-full",
+                        placeholder: "Number of seats",
                     }
-                    button {
-                        class: "btn btn-primary ml-auto block w-32",
-                        r#type: "submit",
-                        "Add"
-                    }
+                    span { "Number of seats" }
                 }
-            }
-            // Closing the dialog/popup/modal form
-            form { method: "dialog", class: "modal-backdrop",
+                label { r#for: TABLE_COUNT_ID, class: "floating-label",
+                    input {
+                        id: TABLE_COUNT_ID,
+                        name: TABLE_COUNT_ID,
+                        r#type: "number",
+                        min: 0,
+                        step: 1,
+                        class: "input focus:outline-none w-full",
+                        placeholder: "Number of tables",
+                    }
+                    span { "Number of tables" }
+                }
                 button {
-                    onclick: |_| async move {
-                        document::eval(formatcp!("return {}.close() == undefined", ADD_TABLE_MODAL_ID))
-                            .await
-                            .unwrap();
-                    },
-                    "Close"
+                    class: "btn btn-primary ml-auto block w-32",
+                    r#type: "submit",
+                    "Add"
                 }
             }
         }
@@ -349,7 +373,7 @@ fn RelationList(tribe: Signal<Tribe>) -> Element {
                         td { "{strength}" }
                         td { "{p2}" }
                         td {
-                            TableTrashButton {
+                            SectionTrashButton {
                                 onclick: {
                                     let p1 = p1.to_owned();
                                     let p2 = p2.to_owned();
