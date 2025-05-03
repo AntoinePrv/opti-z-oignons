@@ -4,20 +4,25 @@ use crate::Route;
 
 #[component]
 pub fn Layout() -> Element {
+    let path: Route = use_route();
+
     rsx! {
-        nav {
-            class: concat!(
-                " navbar bg-base-100 shadow-sm",
-                " sticky top-0 z-100",
-                " w-screen flex items-center justify-center ",
-            ),
-            div { class: "basis-1/4", "Optionions" }
-            ul { class: "basis-1/2 flex justify-center items-center gap-4",
+        nav { class: "bg-base-200 w-screen flex items-center justify-between py-2",
+            div { class: "basis-1/4 justify-self-start", "Optionions" }
+            ul { class: "flex justify-center items-center gap-4 menu menu-horizontal rounded-box",
                 li {
-                    Link { to: Route::ProblemPage {}, "Problem" }
+                    Link {
+                        class: if let Route::ProblemPage { .. } = path { "menu-active" },
+                        to: Route::ProblemPage {},
+                        "Problem"
+                    }
                 }
                 li {
-                    Link { to: Route::SolutionPage {}, "Solution" }
+                    Link {
+                        class: if let Route::SolutionPage { .. } = path { "menu-active" },
+                        to: Route::SolutionPage {},
+                        "Solution"
+                    }
                 }
             }
             div { class: "basis-1/4", "" }
