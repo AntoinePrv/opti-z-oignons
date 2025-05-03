@@ -139,13 +139,15 @@ fn SectionCard(title: Element, body: Element, input: Element) -> Element {
 }
 
 #[component]
-fn TableTrashIcon() -> Element {
+fn TableTrashButton(onclick: EventHandler<MouseEvent>) -> Element {
     rsx! {
-        Icon {
-            class: "stroke-error",
-            width: 15,
-            height: 15,
-            icon: icons::LdTrash2,
+        button { class: "btn btn-xs aspect-square p-0", onclick,
+            Icon {
+                class: "stroke-error",
+                width: 15,
+                height: 15,
+                icon: icons::LdTrash2,
+            }
         }
     }
 }
@@ -163,15 +165,13 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
                     tr {
                         td { "{person}" }
                         td {
-                            button {
-                                class: "btn btn-xs aspect-square p-0",
+                            TableTrashButton {
                                 onclick: {
                                     let person = person.to_owned();
                                     move |_| {
                                         tribe.write().remove_person(&person);
                                     }
                                 },
-                                TableTrashIcon {}
                             }
                         }
                     }
@@ -227,15 +227,13 @@ fn TableList(tables: Signal<Tables>) -> Element {
                         td { "{name}" }
                         td { "{table.n_seats}" }
                         td {
-                            button {
-                                class: "btn btn-xs aspect-square p-0",
+                            TableTrashButton {
                                 onclick: {
                                     let name = name.to_owned();
                                     move |_| {
                                         tables.write().remove(&name);
                                     }
                                 },
-                                TableTrashIcon {}
                             }
                         }
                     }
@@ -351,8 +349,7 @@ fn RelationList(tribe: Signal<Tribe>) -> Element {
                         td { "{strength}" }
                         td { "{p2}" }
                         td {
-                            button {
-                                class: "btn btn-xs aspect-square p-0",
+                            TableTrashButton {
                                 onclick: {
                                     let p1 = p1.to_owned();
                                     let p2 = p2.to_owned();
@@ -360,7 +357,6 @@ fn RelationList(tribe: Signal<Tribe>) -> Element {
                                         tribe.write().remove_relation(&p1, &p2);
                                     }
                                 },
-                                TableTrashIcon {}
                             }
                         }
                     }
