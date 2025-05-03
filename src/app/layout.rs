@@ -7,8 +7,11 @@ pub fn Layout() -> Element {
     let path: Route = use_route();
 
     rsx! {
-        nav { class: "bg-base-200 w-screen flex items-center justify-between py-2",
-            div { class: "basis-1/4 justify-self-start", "Optionions" }
+        nav { class: "bg-base-200 w-screen flex items-center justify-between py-2 px-8",
+            div { class: "basis-1/4 justify-self-start",
+                span { class: "text-2xl mr-2", "🧅" }
+                span { class: "text-xl", "Optizoignons" }
+            }
             ul { class: "flex justify-center items-center gap-4 menu menu-horizontal rounded-box",
                 li {
                     Link {
