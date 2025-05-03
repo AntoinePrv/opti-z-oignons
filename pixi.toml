@@ -58,10 +58,12 @@ ci = { depends-on = ["pre-commit-all"] }
 rust-src = ">=1.79.0"
 sccache = ">=0.8.1"
 dioxus = ">=0.6.3"
+watchexec = ">=2.2.0,<3"
 
 [feature.dev.tasks]
 cargo = "cargo"
 dx = "dx"
+watch-fmt-dx = "watchexec -e rs dx fmt"
 serve-dx = "dx serve"
 serve-tailwind = { depends-on = ["init-tailwind"], cmd = """
 npx tailwindcss --input ./assets/main.tw.css --output ./assets/main.css --watch

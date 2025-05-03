@@ -67,6 +67,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ukkonen-1.0.1-py313h33d0bda_5.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.30.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/watchexec-2.2.0-h6c30b3d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-h7f98852_2.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zlib-1.3.1-hb9d3cd8_2.conda
       osx-arm64:
@@ -131,6 +132,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ukkonen-1.0.1-py313hf9c7212_5.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.30.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/watchexec-2.2.0-h8dba533_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h3422bc3_2.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-1.3.1-h8359307_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-h6491c7d_2.conda
@@ -1412,6 +1414,31 @@ packages:
   license_family: MIT
   size: 3635535
   timestamp: 1743474070226
+- conda: https://conda.anaconda.org/conda-forge/linux-64/watchexec-2.2.0-h6c30b3d_0.conda
+  sha256: 2c73028470f479c76032bdb3f7fc15e3dcf4b30d7a2003456297253aed2d1ea0
+  md5: 405a95e34b6c1c1392bca38c8d29979e
+  depends:
+  - libgcc >=13
+  - __glibc >=2.17,<3.0.a0
+  constrains:
+  - __glibc >=2.17
+  channel: https://fast.prefix.dev/conda-forge
+  license: Apache-2.0
+  license_family: APACHE
+  size: 3830352
+  timestamp: 1733215536787
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/watchexec-2.2.0-h8dba533_0.conda
+  sha256: 57d90124c2bc78be73d8c0fbfed5877e70d883a4b3b44fdd6b1cbd395040a13f
+  md5: 7921544ba7344d23d09656504e1ddd48
+  depends:
+  - __osx >=11.0
+  constrains:
+  - __osx >=11.0
+  channel: https://fast.prefix.dev/conda-forge
+  license: Apache-2.0
+  license_family: APACHE
+  size: 3233568
+  timestamp: 1733215612256
 - conda: https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-h7f98852_2.tar.bz2
   sha256: a4e34c710eeb26945bdbdaba82d3d74f60a78f54a874ec10d373811a5d217535
   md5: 4cb3ad778ec2d5a7acbdf254eb1c42ae
