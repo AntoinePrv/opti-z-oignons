@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
+use crate::app::ui::Card;
 use crate::logic::model::{RelationStrength, TableType, Tables, Tribe};
 
 #[component]
@@ -24,8 +25,8 @@ pub fn Page() -> Element {
         }
         div { class: "p-8 flex gap-8",
             div { class: "basis-1/3",
-                SectionCard {
-                    title: rsx! {
+                Card {
+                    header: rsx! {
                         div { class: "w-full flex justify-between",
                             h2 { "Tables" }
                             TableInput { tables: pb.tables }
@@ -37,8 +38,8 @@ pub fn Page() -> Element {
                 }
             }
             div { class: "basis-1/3",
-                SectionCard {
-                    title: rsx! {
+                Card {
+                    header: rsx! {
                         div { class: "w-full flex justify-between",
                             h2 { "Persons" }
                             PersonInput { tribe: pb.tribe }
@@ -50,8 +51,8 @@ pub fn Page() -> Element {
                 }
             }
             div { class: "basis-1/3",
-                SectionCard {
-                    title: rsx! {
+                Card {
+                    header: rsx! {
                         div { class: "w-full flex justify-between",
                             h2 { "Relations" }
                             RelationInput { tribe: pb.tribe }
@@ -123,18 +124,6 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
                         "🐷"
                     }
                 }
-            }
-        }
-    }
-}
-
-#[component]
-fn SectionCard(title: Element, body: Element) -> Element {
-    rsx! {
-        div { class: "card bg-base-100 shadow-sm",
-            div { class: "card-body",
-                div { class: "card-title", {title} }
-                div { {body} }
             }
         }
     }

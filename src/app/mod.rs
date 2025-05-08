@@ -1,5 +1,6 @@
 pub mod problem;
 pub mod solution;
+pub mod ui;
 
 mod layout;
 pub use layout::Layout;
