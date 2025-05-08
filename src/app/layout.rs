@@ -4,6 +4,16 @@ use crate::Route;
 
 #[component]
 pub fn Layout() -> Element {
+    rsx! {
+        body { class: "min-h-screen w-screen flex flex-col",
+            NavBar {}
+            main { class: "flex-1 bg-base-200", Outlet::<Route> {} }
+        }
+    }
+}
+
+#[component]
+fn NavBar() -> Element {
     let path: Route = use_route();
 
     rsx! {
@@ -30,6 +40,5 @@ pub fn Layout() -> Element {
             }
             div { class: "basis-1/4", "" }
         }
-        main { class: "bg-base-200", Outlet::<Route> {} }
     }
 }
