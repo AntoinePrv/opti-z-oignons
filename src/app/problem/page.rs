@@ -409,7 +409,7 @@ fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
     rsx! {
         SectionAdd { title: "Add a relation between two persons",
             form {
-                class: "mx-auto space-y-2",
+                class: "mx-auto space-y-4",
                 onsubmit: move |event| {
                     let mut data = event.data.values();
                     let person1 = data.remove(RELATION_PERSON_1_ID).map(|val| val.as_value());
@@ -442,25 +442,25 @@ fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
                     }
                     span { "First Person name" }
                 }
-                label { r#for: RELATION_STRENGTH_ID, "Relation" }
-                input {
-                    id: RELATION_STRENGTH_ID,
-                    name: RELATION_STRENGTH_ID,
-                    r#type: "range",
-                    list: RELATION_STRENGTH_DATALIST_ID,
-                    min: RelationStrength::min() as usize,
-                    max: RelationStrength::max() as usize,
-                    step: 1,
-                    value: RelationStrength::max() as usize,
-                    class: "range range-primary range-xs",
-                }
-                // TODO: labels can be shown with CSS
-                datalist { id: RELATION_STRENGTH_DATALIST_ID,
-                    for strength in RelationStrength::iter() {
-                        option { value: strength as usize, label: "{strength}" }
+                label { class: "hidden", r#for: RELATION_STRENGTH_ID, "Strength" }
+                div {
+                    input {
+                        id: RELATION_STRENGTH_ID,
+                        name: RELATION_STRENGTH_ID,
+                        r#type: "range",
+                        list: RELATION_STRENGTH_DATALIST_ID,
+                        min: RelationStrength::min() as usize,
+                        max: RelationStrength::max() as usize,
+                        step: 1,
+                        value: RelationStrength::max() as usize,
+                        class: "range range-primary range-xs w-full",
+                    }
+                    div { class: "flex justify-between mb-2 text-xs",
+                        for strength in RelationStrength::iter() {
+                            span { "{strength}" }
+                        }
                     }
                 }
-
                 label { r#for: RELATION_PERSON_2_ID, class: "floating-label",
                     input {
                         id: RELATION_PERSON_2_ID,
