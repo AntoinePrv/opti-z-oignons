@@ -1,4 +1,3 @@
-use const_format::formatcp;
 use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
@@ -117,7 +116,12 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
             }
             ul { class: "basis-1/2 flex flex-wrap justify-center gap-2",
                 for person in tribe.read().persons() {
-                    li { key: "{person}", "🐷" }
+                    li {
+                        class: "tooltip",
+                        "data-tip": "{person}",
+                        key: "{person}",
+                        "🐷"
+                    }
                 }
             }
         }
