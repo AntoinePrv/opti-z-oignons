@@ -1,18 +1,42 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
-use crate::{
-    SolutionState,
-    logic::{model::Assignment, solver::SolverError},
-};
+use crate::SolutionState;
+use crate::app::ui::CardSimple;
+use crate::logic::{model::Assignment, solver::SolverError};
 
 #[component]
 pub fn Page() -> Element {
     let pb: crate::ProblemSignal = use_context();
-    let mut solution: crate::SolutionSignal = use_context();
+    let solution: crate::SolutionSignal = use_context();
 
     rsx! {
-        SolveText { outdated: *solution.outdated.read() }
+        div { class: "p-8",
+            ControlBar { class: "py-4", pb, solution: solution.clone() }
+            AssignmentList { assignment: solution.assignment }
+        }
+    }
+}
+
+#[component]
+fn ControlBar(
+    pb: crate::ProblemSignal,
+    solution: crate::SolutionSignal,
+    #[props(default)] class: &'static str,
+) -> Element {
+    rsx! {
+        div { class: format!("flex justify-between items-center {}", class),
+            SolveText { outdated: *solution.outdated.read() }
+            SolveButton { pb, solution }
+        }
+    }
+}
+
+#[component]
+fn SolveButton(pb: crate::ProblemSignal, solution: crate::SolutionSignal) -> Element {
+    rsx! {
         button {
+            class: "btn btn-primary",
             onclick: move |_| {
                 solution
                     .assignment
@@ -22,7 +46,6 @@ pub fn Page() -> Element {
             disabled: solve_disabled(*solution.outdated.read()),
             "{solve_text(*solution.outdated.read())}"
         }
-        AssignmentList { assignment: solution.assignment }
     }
 }
 
@@ -30,11 +53,17 @@ pub fn Page() -> Element {
 fn SolveText(outdated: SolutionState) -> Element {
     rsx!(
         if outdated == SolutionState::Missing {
-            p { "There is no ongoing solution" }
-        }
-        if outdated == SolutionState::Outdated {
-            // TODO Warning style
-            p { "The problem has changed since the last solution" }
+            div { role: "alert", class: "alert alert-info",
+                Icon { icon: icons::LdInfo }
+                span { "There is no ongoing solution" }
+            }
+        } else if outdated == SolutionState::Outdated {
+            div { role: "alert", class: "alert alert-warning",
+                Icon { icon: icons::LdTriangleAlert }
+                span { "The problem has changed since the last solution" }
+            }
+        } else {
+            div {}
         }
     )
 }
@@ -59,15 +88,31 @@ fn AssignmentList(assignment: Signal<Result<Assignment, SolverError>>) -> Elemen
         );
     }
 
+    let assignment = assignment.map(|a| a.as_ref().unwrap());
+
     rsx! {
-        p { "Table assignment:" }
-        ul {
-            for (table_name , group) in assignment.read().as_ref().unwrap().iter() {
-                li {
-                    p { "Table {table_name}:" }
-                    ul {
-                        for person in group {
-                            li { key: person, "{person}" }
+        div { class: "flex flex-wrap gap-4",
+            for table_name in assignment.read().keys().cloned() {
+                div { class: "flex-1",
+                    TableCard {
+                        name: table_name.clone(),
+                        group: assignment.clone().map(move |a| &a[&table_name]),
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[component]
+fn TableCard(name: String, group: MappedSignal<Vec<String>>) -> Element {
+    rsx! {
+        CardSimple { title: "Table {name}",
+            table { class: "table",
+                tbody {
+                    for person in group.read().iter() {
+                        tr {
+                            td { key: person, "{person}" }
                         }
                     }
                 }

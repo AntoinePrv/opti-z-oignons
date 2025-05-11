@@ -11,3 +11,15 @@ pub fn Card(header: Element, body: Element) -> Element {
         }
     }
 }
+
+#[component]
+pub fn CardSimple(title: String, children: Element) -> Element {
+    rsx! {
+        Card {
+            header: rsx! {
+                div { {title} }
+            },
+            body: children,
+        }
+    }
+}

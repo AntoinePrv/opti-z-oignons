@@ -20,7 +20,7 @@ const FAVICON: &str = concat!(
 );
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct ProblemSignal {
     pub tables: Signal<Tables>,
     pub tribe: Signal<Tribe>,
@@ -35,7 +35,7 @@ impl ProblemSignal {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct SolutionSignal {
     pub assignment: Signal<Result<Assignment, SolverError>>,
     pub outdated: Signal<SolutionState>,
