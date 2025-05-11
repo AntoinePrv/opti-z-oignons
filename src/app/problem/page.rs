@@ -8,14 +8,6 @@ use crate::logic::model::{RelationStrength, TableType, Tables, Tribe};
 pub fn Page() -> Element {
     let pb: crate::ProblemSignal = use_context();
 
-    // Fill some data in Debug mode
-    #[cfg(debug_assertions)]
-    {
-        let (ex_tribe, ex_tables) = crate::logic::examples::harry_potter();
-        pb.tribe.clone().set(ex_tribe);
-        pb.tables.clone().set(ex_tables);
-    }
-
     rsx! {
         Schema { tables: pb.tables, tribe: pb.tribe }
         ShowMeHowButton {

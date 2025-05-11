@@ -76,6 +76,14 @@ fn App() -> Element {
     let mut sol = use_context_provider(SolutionSignal::new);
     use_context_provider(|| Signal::new(name_generator::NameGenerator::new()));
 
+    // Fill some data in Debug mode
+    #[cfg(debug_assertions)]
+    {
+        let (ex_tribe, ex_tables) = crate::logic::examples::harry_potter();
+        pb.tribe.clone().set(ex_tribe);
+        pb.tables.clone().set(ex_tables);
+    }
+
     // FIXME so much for encapsulation but could not manage to make it run in `new`.
     // Perhaps using a custom hook?
     use_effect(move || {
