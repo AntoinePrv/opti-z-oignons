@@ -13,7 +13,7 @@ pub fn Page() -> Element {
     rsx! {
         div { class: "p-8",
             ControlBar { class: "py-4", pb, solution: solution.clone() }
-            AssignmentList { assignment: solution.assignment }
+            AssignmentSection { assignment: solution.assignment }
         }
     }
 }
@@ -81,15 +81,18 @@ fn solve_disabled(state: SolutionState) -> bool {
 }
 
 #[component]
-fn AssignmentList(assignment: Signal<Result<Assignment, SolverError>>) -> Element {
-    if let Err(err) = &(*assignment.read()) {
-        return rsx!(
-            p { "{err}" }
-        );
+fn AssignmentSection(assignment: Signal<Result<Assignment, SolverError>>) -> Element {
+    rsx! {
+        if assignment.read().is_ok() {
+            AssignmentList { assignment: assignment.map(|a| a.as_ref().unwrap()) }
+        } else {
+            AssignmentSkeleton {}
+        }
     }
+}
 
-    let assignment = assignment.map(|a| a.as_ref().unwrap());
-
+#[component]
+fn AssignmentList(assignment: MappedSignal<Assignment>) -> Element {
     rsx! {
         div { class: "flex flex-wrap gap-4",
             for table_name in assignment.read().keys().cloned() {
@@ -99,6 +102,17 @@ fn AssignmentList(assignment: Signal<Result<Assignment, SolverError>>) -> Elemen
                         group: assignment.clone().map(move |a| &a[&table_name]),
                     }
                 }
+            }
+        }
+    }
+}
+
+#[component]
+fn AssignmentSkeleton(#[props(default = 4)] element_count: usize) -> Element {
+    rsx! {
+        div { class: "flex flex-wrap gap-4",
+            for _ in 0..element_count {
+                div { class: "flex-1 skeleton h-96" }
             }
         }
     }
