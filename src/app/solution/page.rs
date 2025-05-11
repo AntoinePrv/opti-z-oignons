@@ -11,7 +11,7 @@ pub fn Page() -> Element {
     let solution: crate::SolutionSignal = use_context();
 
     rsx! {
-        div { class: "p-8",
+        div { class: "px-8",
             ControlBar { class: "py-4", pb, solution: solution.clone() }
             AssignmentSection { assignment: solution.assignment }
         }
