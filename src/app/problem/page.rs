@@ -88,32 +88,75 @@ fn ShowMeHowButton(tribe: Signal<Tribe>, tables: Signal<Tables>, class: &'static
     }
 }
 
-fn fmt_table(seats: u32) -> String {
-    let right_cnt = seats / 2;
-    format!(
-        "{}🟡{}",
-        "🪑".repeat((seats - right_cnt) as usize),
-        "🪑".repeat(right_cnt as usize)
-    )
+#[component]
+fn PersonIcon() -> Element {
+    rsx! {
+        Icon {
+            class: "stroke-base-content stroke-2",
+            width: 20,
+            height: 20,
+            icon: icons::LdPersonStanding,
+        }
+    }
+}
+
+#[component]
+fn ArmChairIcon() -> Element {
+    rsx! {
+        div { class: "w-4 h-4 rounded-r-full border-4 border-l-0 border-stone-600 bg-stone-500" }
+    }
+}
+
+#[component]
+fn TableAndChairs(n_seats: u32) -> Element {
+    let angle = 360.0 / (n_seats as f32);
+    rsx! {
+        div { class: "relative w-28 h-28",
+            // Circle for the table
+            div { class: "absolute top-1/2 left-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 bg-stone-400 rounded-full" }
+            // All the chairs
+            for i in (0..n_seats).map(|i| i as f32) {
+                div {
+                    class: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                    style: "transform: rotate({i * angle}deg) translateX(40px);",
+                    ArmChairIcon {}
+                }
+            }
+        }
+    }
 }
 
 #[component]
 fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
     // TODO add hover for names
+    let half_persons = use_memo(move || tribe.read().persons_count() / 2);
+
     rsx! {
         div { class: "flex gap-8",
-            ul { class: "basis-1/2 flex flex-wrap justify-center gap-2",
-                for (_name , kind) in tables.read().iter() {
-                    li { key: _name, "{fmt_table(kind.n_seats)}" }
+            ul { class: "basis-1/4 flex flex-wrap justify-center gap-2",
+                for person in tribe.read().persons().take(half_persons()) {
+                    li {
+                        class: "tooltip",
+                        "data-tip": "{person}",
+                        key: person,
+                        PersonIcon {}
+                    }
                 }
             }
             ul { class: "basis-1/2 flex flex-wrap justify-center gap-2",
-                for person in tribe.read().persons() {
+                for (name , kind) in tables.read().iter() {
+                    li { class: "tooltip", "data-tip": "{name}", key: name,
+                        TableAndChairs { n_seats: kind.n_seats }
+                    }
+                }
+            }
+            ul { class: "basis-1/4 flex flex-wrap justify-center gap-2",
+                for person in tribe.read().persons().skip(half_persons()) {
                     li {
                         class: "tooltip",
                         "data-tip": "{person}",
                         key: "{person}",
-                        "🐷"
+                        PersonIcon {}
                     }
                 }
             }
