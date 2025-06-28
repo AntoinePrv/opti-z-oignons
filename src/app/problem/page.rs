@@ -128,14 +128,13 @@ fn TableAndChairs(n_seats: u32) -> Element {
 
 #[component]
 fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
-    // TODO add hover for names
     let half_persons = use_memo(move || tribe.read().persons_count() / 2);
 
     rsx! {
         div { class: "flex gap-8",
-            ul { class: "basis-1/4 flex flex-wrap justify-center gap-2",
+            div { class: "basis-1/4 flex flex-wrap justify-end items-center content-center gap-2",
                 for person in tribe.read().persons().take(half_persons()) {
-                    li {
+                    div {
                         class: "tooltip",
                         "data-tip": "{person}",
                         key: person,
@@ -143,16 +142,16 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
                     }
                 }
             }
-            ul { class: "basis-1/2 flex flex-wrap justify-center gap-2",
+            div { class: "basis-1/2 flex flex-wrap justify-center gap-2",
                 for (name , kind) in tables.read().iter() {
-                    li { class: "tooltip", "data-tip": "{name}", key: name,
+                    div { class: "tooltip", "data-tip": "{name}", key: name,
                         TableAndChairs { n_seats: kind.n_seats }
                     }
                 }
             }
-            ul { class: "basis-1/4 flex flex-wrap justify-center gap-2",
+            div { class: "basis-1/4 flex flex-wrap justify-start items-center content-center gap-2",
                 for person in tribe.read().persons().skip(half_persons()) {
-                    li {
+                    div {
                         class: "tooltip",
                         "data-tip": "{person}",
                         key: "{person}",
