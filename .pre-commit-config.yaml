@@ -1,0 +1,47 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: trailing-whitespace
+        exclude_types: [rust]
+      - id: end-of-file-fixer
+        exclude_types: [rust]
+      - id: mixed-line-ending
+        exclude_types: [rust]
+        args: ['--fix=lf']
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      # - id: no-commit-to-branch
+      #   args: [--branch, dev]
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.28.6
+    hooks:
+      - id: check-github-workflows
+  - repo: local
+    hooks:
+      # Running common tools though pixi so that they are in sync with the ones used
+      # by our editors (and does not duplicate downloads).
+      - id: pixi-format-taplo
+        name: "Run taplo format through pixi"
+        entry: pixi run fmt-taplo""
+        language: system
+        types_or: [toml]
+      - id: pixi-format-cargo
+        name: "Run cargo format through pixi"
+        entry: pixi run fmt-cargo --
+        language: system
+        types_or: [rust]
+      - id: pixi-format-dx
+        name: "Run dioxus format through pixi"
+        entry: pixi run fmt-dx
+        language: system
+        types_or: [rust]
+        pass_filenames: false
+      - id: pixi-check-clippy
+        name: "Run clippy through pixi"
+        entry: pixi run check-clippy --allow-dirty
+        language: system
+        types_or: [rust]
+        pass_filenames: false # Would need a different task

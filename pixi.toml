@@ -50,6 +50,7 @@ check = { depends-on = ["check-cargo", "check-clippy"] }
 test-cargo = "cargo --locked test --workspace"
 test = { depends-on = ["test-cargo"] }
 # Pre-commit easy alias
+pre-commit = "pre-commit"
 pre-commit-all = "pre-commit run --all-files"
 # Alias for what is being run in ci (pre-commit runs checks and formatter)
 ci = { depends-on = ["pre-commit-all"] }
