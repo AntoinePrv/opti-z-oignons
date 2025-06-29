@@ -110,7 +110,7 @@ fn AssignmentList(assignment: Signal<Assignment>) -> Element {
                 div { class: "flex-1",
                     TableCard {
                         name: table_name.clone(),
-                        group: assignment.clone().map(move |a| &a[&table_name]),
+                        group: assignment.map(move |a| &a[&table_name]),
                     }
                 }
             }

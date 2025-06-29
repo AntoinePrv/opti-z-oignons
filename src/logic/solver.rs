@@ -105,11 +105,11 @@ impl Assignor {
     }
 
     pub fn persons(&self) -> impl Iterator<Item = PersonIdx> + use<> {
-        (0..self.person_count() as u32).into_iter()
+        0..self.person_count()
     }
 
     pub fn tables(&self) -> impl Iterator<Item = TableIdx> + use<> {
-        (0..self.table_count() as Size).into_iter()
+        0..self.table_count() as Size
     }
 
     pub fn seat_count(&self) -> Size {
@@ -289,12 +289,9 @@ impl<'pb> Solver<'pb> {
         })
     }
 
-    pub fn build_relations<'a>(
-        tribe: &'a model::Tribe,
-    ) -> SolverResult<(
-        RelationGraph,
-        Vec</* PersonIdx, */ &'a model::PersonNameRef>,
-    )> {
+    pub fn build_relations(
+        tribe: &model::Tribe,
+    ) -> SolverResult<(RelationGraph, Vec</* PersonIdx, */ &model::PersonNameRef>)> {
         if tribe.persons_count() >= (Size::MAX as usize) {
             return Err(SolverError::ProblemTooLarge(
                 "there are too many persons".into(),
@@ -309,7 +306,7 @@ impl<'pb> Solver<'pb> {
             .map(|(idx, name)| (name, idx as PersonIdx))
             .collect::<BTreeMap<&model::PersonNameRef, PersonIdx>>();
 
-        let mut relations = RelationGraph::with_nodes(tribe.persons_count() as usize);
+        let mut relations = RelationGraph::with_nodes(tribe.persons_count());
         for (p1, p2, strenght) in tribe.relations() {
             relations.add_edge(
                 // Safe because all indices added
@@ -546,8 +543,7 @@ mod tests {
 
         let assignees = assignment
             .values()
-            .map(|t| t.iter())
-            .flatten()
+            .flat_map(|t| t.iter())
             .collect::<HashSet<_>>();
         assert_eq!(assignees.len(), tribe.persons_count());
         for p in tribe.persons() {

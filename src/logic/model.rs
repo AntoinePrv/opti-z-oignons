@@ -10,14 +10,14 @@ pub enum RelationStrength {
 
 impl RelationStrength {
     pub fn min() -> Self {
-        return Self::iter().next().unwrap();
+        Self::iter().next().unwrap()
     }
 
     pub fn max() -> Self {
-        return Self::iter().next_back().unwrap();
+        Self::iter().next_back().unwrap()
     }
 
-    pub fn iter() -> impl Iterator<Item = Self> + Clone + DoubleEndedIterator + ExactSizeIterator {
+    pub fn iter() -> impl Clone + DoubleEndedIterator<Item = Self> + ExactSizeIterator {
         <Self as strum::IntoEnumIterator>::iter()
     }
 
@@ -69,12 +69,10 @@ impl Tribe {
         strength: RelationStrength,
     ) {
         let name2 = name2.into();
-        self.directed_relations
-            .entry(name2.clone())
-            .or_insert_with(HashMap::new);
+        self.directed_relations.entry(name2.clone()).or_default();
         self.directed_relations
             .entry(name1.into())
-            .or_insert_with(HashMap::new)
+            .or_default()
             .entry(name2)
             .or_insert(strength);
     }
@@ -86,14 +84,11 @@ impl Tribe {
     }
 
     pub fn relations(&self) -> impl Iterator<Item = (&PersonName, &PersonName, RelationStrength)> {
-        self.directed_relations
-            .iter()
-            .map(|(p1, neighbors)| {
-                neighbors
-                    .iter()
-                    .map(move |(p2, strength)| (p1, p2, *strength))
-            })
-            .flatten()
+        self.directed_relations.iter().flat_map(|(p1, neighbors)| {
+            neighbors
+                .iter()
+                .map(move |(p2, strength)| (p1, p2, *strength))
+        })
     }
 }
 

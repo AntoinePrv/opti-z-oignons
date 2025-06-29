@@ -2,6 +2,12 @@ pub struct NameGenerator {
     current: usize,
 }
 
+impl Default for NameGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NameGenerator {
     pub fn new() -> Self {
         Self { current: 1 }

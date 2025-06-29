@@ -259,7 +259,7 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
 
 #[component]
 fn PersonInput(tribe: Signal<Tribe>) -> Element {
-    const PERSON_NAME_ID: &'static str = "person_name";
+    const PERSON_NAME_ID: &str = "person_name";
 
     rsx! {
         SectionAdd { title: "Add a new person",
@@ -331,8 +331,8 @@ fn TableList(tables: Signal<Tables>) -> Element {
 
 #[component]
 fn TableInput(tables: Signal<Tables>) -> Element {
-    const TABLE_SEATS_ID: &'static str = "table_seats";
-    const TABLE_NAME_ID: &'static str = "table_name";
+    const TABLE_SEATS_ID: &str = "table_seats";
+    const TABLE_NAME_ID: &str = "table_name";
 
     rsx! {
         SectionAdd { title: "Add multiple tables",
@@ -418,11 +418,11 @@ fn RelationList(tribe: Signal<Tribe>) -> Element {
 
 #[component]
 fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
-    const RELATION_STRENGTH_ID: &'static str = "relation_strength";
-    const RELATION_STRENGTH_DATALIST_ID: &'static str = "relation_strength_datalist";
-    const RELATION_PERSON_1_ID: &'static str = "relation_person_1";
-    const RELATION_PERSON_2_ID: &'static str = "relation_person_2";
-    const RELATION_PERSON_DATALIST_ID: &'static str = "relation_person_datalist";
+    const RELATION_STRENGTH_ID: &str = "relation_strength";
+    const RELATION_STRENGTH_DATALIST_ID: &str = "relation_strength_datalist";
+    const RELATION_PERSON_1_ID: &str = "relation_person_1";
+    const RELATION_PERSON_2_ID: &str = "relation_person_2";
+    const RELATION_PERSON_DATALIST_ID: &str = "relation_person_datalist";
 
     rsx! {
         SectionAdd { title: "Add a relation between two persons",
@@ -436,7 +436,7 @@ fn RelationInput(mut tribe: Signal<Tribe>) -> Element {
                         .remove(RELATION_STRENGTH_ID)
                         .map(|val| val.as_value())
                         .and_then(|val| val.parse::<usize>().ok())
-                        .and_then(|val| RelationStrength::from_repr(val));
+                        .and_then(RelationStrength::from_repr);
                     if let Some(((person1, person2), strength)) = person1.zip(person2).zip(strength)
                     {
                         tribe.write().add_relation(person1, person2, strength);

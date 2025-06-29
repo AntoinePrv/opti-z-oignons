@@ -50,15 +50,12 @@ pub fn harry_potter() -> (Tribe, Tables) {
 
     (
         make_tribe(&RELATIONS),
-        Tables::from_iter(
-            [
-                ("Phoenix".to_owned(), TableType { n_seats: 12 }),
-                ("Moonstones".to_owned(), TableType { n_seats: 8 }),
-                ("Willow".to_owned(), TableType { n_seats: 6 }),
-                ("Niffler".to_owned(), TableType { n_seats: 6 }),
-            ]
-            .into_iter(),
-        ),
+        Tables::from_iter([
+            ("Phoenix".to_owned(), TableType { n_seats: 12 }),
+            ("Moonstones".to_owned(), TableType { n_seats: 8 }),
+            ("Willow".to_owned(), TableType { n_seats: 6 }),
+            ("Niffler".to_owned(), TableType { n_seats: 6 }),
+        ]),
     )
 }
 
