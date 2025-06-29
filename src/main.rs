@@ -37,22 +37,23 @@ impl ProblemSignal {
 
 #[derive(Clone, PartialEq, Eq)]
 struct SolutionSignal {
-    pub assignment: Signal<Result<Assignment, SolverError>>,
-    pub outdated: Signal<SolutionState>,
+    pub assignment: Signal<Assignment>,
+    pub state: Signal<SolutionState>,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 enum SolutionState {
     Missing,
     Outdated,
     Valid,
+    Error(SolverError),
 }
 
 impl SolutionSignal {
     pub fn new() -> Self {
         Self {
-            assignment: Signal::new(Err(SolverError::Unknown)),
-            outdated: Signal::new(SolutionState::Missing),
+            assignment: Signal::new(Assignment::new()),
+            state: Signal::new(SolutionState::Missing),
         }
     }
 }
@@ -89,8 +90,8 @@ fn App() -> Element {
     use_effect(move || {
         let _r1 = &pb.tribe.read();
         let _r2 = &pb.tables.read();
-        if *sol.outdated.peek() != SolutionState::Missing {
-            sol.outdated.set(SolutionState::Outdated);
+        if *sol.state.peek() != SolutionState::Missing {
+            sol.state.set(SolutionState::Outdated);
         }
     });
 

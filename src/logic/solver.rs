@@ -15,7 +15,7 @@ const _: [(); 1 - ((Size::MAX as usize as Size == Size::MAX) as usize)] = [(); 0
 
 pub type SolverResult<T> = Result<T, SolverError>;
 
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 pub enum SolverError {
     #[error("the problem is too large, {0} (max {max})", max=Size::MAX)]
     ProblemTooLarge(String),

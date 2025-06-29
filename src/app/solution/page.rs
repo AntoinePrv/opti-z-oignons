@@ -3,7 +3,7 @@ use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
 use crate::SolutionState;
 use crate::app::ui::CardSimple;
-use crate::logic::{model::Assignment, solver::SolverError};
+use crate::logic::model::Assignment;
 
 #[component]
 pub fn Page() -> Element {
@@ -13,7 +13,7 @@ pub fn Page() -> Element {
     rsx! {
         div { class: "px-8",
             ControlBar { class: "py-4", pb, solution: solution.clone() }
-            AssignmentSection { assignment: solution.assignment }
+            AssignmentSection { solution }
         }
     }
 }
@@ -26,7 +26,7 @@ fn ControlBar(
 ) -> Element {
     rsx! {
         div { class: format!("flex justify-between items-center {}", class),
-            SolveText { outdated: *solution.outdated.read() }
+            SolveText { state: solution.state }
             SolveButton { pb, solution }
         }
     }
@@ -38,61 +38,72 @@ fn SolveButton(pb: crate::ProblemSignal, solution: crate::SolutionSignal) -> Ele
         button {
             class: "btn btn-primary",
             onclick: move |_| {
-                solution
-                    .assignment
-                    .set(crate::logic::solver::solve(&pb.tables.read(), &pb.tribe.read()));
-                solution.outdated.set(SolutionState::Valid);
+                match crate::logic::solver::solve(&pb.tables.read(), &pb.tribe.read()) {
+                    Ok(assignment) => {
+                        solution.state.set(SolutionState::Valid);
+                        solution.assignment.set(assignment);
+                    }
+                    Err(err) => {
+                        solution.state.set(SolutionState::Error(err));
+                    }
+                }
             },
-            disabled: solve_disabled(*solution.outdated.read()),
-            "{solve_text(*solution.outdated.read())}"
+            disabled: solve_disabled(solution.state),
+            "{solve_text(solution.state)}"
         }
     }
 }
 
 #[component]
-fn SolveText(outdated: SolutionState) -> Element {
-    rsx!(
-        if outdated == SolutionState::Missing {
+fn SolveText(state: Signal<SolutionState>) -> Element {
+    rsx! {
+        if *state.read() == SolutionState::Missing {
             div { role: "alert", class: "alert alert-info",
                 Icon { icon: icons::LdInfo }
                 span { "There is no ongoing solution" }
             }
-        } else if outdated == SolutionState::Outdated {
+        } else if *state.read() == SolutionState::Outdated {
             div { role: "alert", class: "alert alert-warning",
                 Icon { icon: icons::LdTriangleAlert }
                 span { "The problem has changed since the last solution" }
             }
+        } else if let SolutionState::Error(error) = &(*state.read()) {
+            div { role: "alert", class: "alert alert-error",
+                Icon { icon: icons::LdCircleX }
+                span { "Error: {error}" }
+            }
         } else {
             div {}
         }
-    )
+    }
 }
 
-fn solve_text(state: SolutionState) -> &'static str {
-    match state {
+fn solve_text(state: Signal<SolutionState>) -> &'static str {
+    match *state.read() {
         SolutionState::Missing => "Solve",
         SolutionState::Outdated => "Solve again",
+        SolutionState::Error(_) => "Solve again",
         SolutionState::Valid => "Up to date",
     }
 }
 
-fn solve_disabled(state: SolutionState) -> bool {
-    state == SolutionState::Valid
+fn solve_disabled(state: Signal<SolutionState>) -> bool {
+    *state.read() == SolutionState::Valid
 }
 
 #[component]
-fn AssignmentSection(assignment: Signal<Result<Assignment, SolverError>>) -> Element {
+fn AssignmentSection(solution: crate::SolutionSignal) -> Element {
     rsx! {
-        if assignment.read().is_ok() {
-            AssignmentList { assignment: assignment.map(|a| a.as_ref().unwrap()) }
-        } else {
+        if *solution.state.read() == SolutionState::Missing {
             AssignmentSkeleton {}
+        } else {
+            AssignmentList { assignment: solution.assignment }
         }
     }
 }
 
 #[component]
-fn AssignmentList(assignment: MappedSignal<Assignment>) -> Element {
+fn AssignmentList(assignment: Signal<Assignment>) -> Element {
     rsx! {
         div { class: "flex flex-wrap gap-4",
             for table_name in assignment.read().keys().cloned() {
