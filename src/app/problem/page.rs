@@ -332,9 +332,7 @@ fn TableList(tables: Signal<Tables>) -> Element {
 #[component]
 fn TableInput(tables: Signal<Tables>) -> Element {
     const TABLE_SEATS_ID: &'static str = "table_seats";
-    const TABLE_COUNT_ID: &'static str = "table_count";
-
-    let mut name_generator: Signal<crate::name_generator::NameGenerator> = use_context();
+    const TABLE_NAME_ID: &'static str = "table_name";
 
     rsx! {
         SectionAdd { title: "Add multiple tables",
@@ -346,17 +344,22 @@ fn TableInput(tables: Signal<Tables>) -> Element {
                         .remove(TABLE_SEATS_ID)
                         .map(|val| val.as_value())
                         .and_then(|val| val.parse::<u32>().ok());
-                    let count_input = data
-                        .remove(TABLE_COUNT_ID)
-                        .map(|val| val.as_value())
-                        .and_then(|val| val.parse::<usize>().ok());
-                    if let Some((n_seats, count)) = n_seats_input.zip(count_input) {
-                        for _ in 0..count {
-                            let name = name_generator.write().next().unwrap();
-                            tables.write().insert(name, TableType { n_seats });
-                        }
+                    let name_input = data.remove(TABLE_NAME_ID).map(|val| val.as_value());
+                    if let Some((n_seats, name)) = n_seats_input.zip(name_input) {
+                        tables.write().insert(name, TableType { n_seats });
                     }
                 },
+                label { r#for: TABLE_NAME_ID, class: "floating-label",
+                    input {
+                        id: TABLE_NAME_ID,
+                        name: TABLE_NAME_ID,
+                        r#type: "text",
+                        minlength: 1,
+                        class: "input focus:outline-none w-full",
+                        placeholder: "Table name",
+                    }
+                    span { "Table name" }
+                }
                 label { r#for: TABLE_SEATS_ID, class: "floating-label",
                     input {
                         id: TABLE_SEATS_ID,
@@ -368,18 +371,6 @@ fn TableInput(tables: Signal<Tables>) -> Element {
                         placeholder: "Number of seats",
                     }
                     span { "Number of seats" }
-                }
-                label { r#for: TABLE_COUNT_ID, class: "floating-label",
-                    input {
-                        id: TABLE_COUNT_ID,
-                        name: TABLE_COUNT_ID,
-                        r#type: "number",
-                        min: 0,
-                        step: 1,
-                        class: "input focus:outline-none w-full",
-                        placeholder: "Number of tables",
-                    }
-                    span { "Number of tables" }
                 }
                 button {
                     class: "btn btn-primary ml-auto block w-32",
