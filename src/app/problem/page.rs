@@ -103,7 +103,7 @@ fn PersonIcon() -> Element {
 #[component]
 fn ArmChairIcon() -> Element {
     rsx! {
-        div { class: "w-4 h-4 rounded-r-full border-4 border-l-0 border-stone-600 bg-stone-500" }
+        div { class: "w-4 h-4 rounded-r-full border-4 border-l-0 border-stone-600 bg-stone-500 shadow-md" }
     }
 }
 
@@ -113,7 +113,7 @@ fn TableAndChairs(n_seats: u32) -> Element {
     rsx! {
         div { class: "relative w-28 h-28",
             // Circle for the table
-            div { class: "absolute top-1/2 left-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 bg-stone-400 rounded-full" }
+            div { class: "absolute top-1/2 left-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 bg-stone-400 rounded-full shadow-md" }
             // All the chairs
             for i in (0..n_seats).map(|i| i as f32) {
                 div {
@@ -131,8 +131,8 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
     let half_persons = use_memo(move || tribe.read().persons_count() / 2);
 
     rsx! {
-        div { class: "flex gap-8",
-            div { class: "basis-1/4 flex flex-wrap justify-end items-center content-center gap-2",
+        div { class: "flex gap-8 w-full justify-center",
+            div { class: "basis-1/8 flex flex-wrap justify-end items-center content-center gap-2",
                 for person in tribe.read().persons().take(half_persons()) {
                     div {
                         class: "tooltip",
@@ -149,7 +149,7 @@ fn Schema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element {
                     }
                 }
             }
-            div { class: "basis-1/4 flex flex-wrap justify-start items-center content-center gap-2",
+            div { class: "basis-1/8 flex flex-wrap justify-start items-center content-center gap-2",
                 for person in tribe.read().persons().skip(half_persons()) {
                     div {
                         class: "tooltip",
