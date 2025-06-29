@@ -7,7 +7,7 @@ channels = ["https://fast.prefix.dev/conda-forge"]
 platforms = ["osx-arm64", "linux-64"]
 
 [environments]
-default = { solve-group = "default" }
+default = { features = ["build", "css"], solve-group = "default" }
 dev = { features = ["build", "css", "test", "dev"], solve-group = "default" }
 
 [feature.build.dependencies]
