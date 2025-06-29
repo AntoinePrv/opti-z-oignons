@@ -1,8 +1,12 @@
-name: Deploy static content to Pages
+name: Test and deploy
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -16,7 +20,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.8.10
+        with:
+          pixi-version: v0.48.0
+          cache: true
+          manifest-path: pixi.toml
+      - name: Run checks through pre-commit
+        run: pixi run pre-commit-all
+      - name: Run cargo tests
+        run: pixi run test-cargo
+
   deploy:
+    needs: ["test"]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -29,7 +51,7 @@ jobs:
       - name: Dummy website build
         run: |
           mkdir site/
-          echo "Hello Optz!" > site/index.html
+          echo "Hello again Optz!" > site/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
