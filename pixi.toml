@@ -16,6 +16,10 @@ c-compiler = ">=1.7.0,<2"
 rust = ">=1.85.0"
 rust-std-wasm32-unknown-unknown = ">=1.83.0"
 
+[feature.css.tasks.init-cargo]
+cmd = "cargo fetch"
+inputs = ["Cargo.toml", "Cargo.lock"]
+
 [feature.css.dependencies]
 nodejs = "*"
 
