@@ -1,9 +1,9 @@
 [application]
 
-name = "group-assignment"
+name = "opti-z-oignons"
 
 [web.app]
-title = "Group Assignment"
+title = "Optz"
 
 [web.resource]
 style = []
