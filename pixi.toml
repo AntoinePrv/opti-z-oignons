@@ -32,6 +32,11 @@ outputs = ["node_modules/"]
 [feature.css.tasks.tailwind]
 cmd = "npx tailwindcss"
 depends-on = ["init-tailwind"]
+[feature.css.tasks.build-tailwind]
+depends-on = ["init-tailwind"]
+cmd = "npx tailwindcss --input ./assets/main.tw.css --output ./assets/main.css"
+inputs = ["assets/main.tw.css", "src/**/*.rs"]
+outputs = ["assets/main.css"]
 
 [feature.build.activation.env]
 RUSTC_WRAPPER = "sccache"
@@ -48,7 +53,9 @@ fmt-dx = "dx fmt"
 fmt = { depends-on = ["fmt-taplo", "fmt-cargo", "fmt-dx"] }
 # Checkers
 check-cargo = "cargo check --all-targets --workspace"
-check-clippy = { cmd = "cargo --locked clippy --fix --allow-staged", env = { RUSTFLAGS = "-Dwarnings", CARGO_TARGET_DIR = "$PIXI_PROJECT_ROOT/target/clippy" } }
+check-clippy = { cmd = "cargo --locked clippy --fix --allow-staged", env = { RUSTFLAGS = "-Dwarnings", CARGO_TARGET_DIR = "$PIXI_PROJECT_ROOT/target/clippy" }, depends-on = [
+  "build-tailwind",
+] }
 check = { depends-on = ["check-cargo", "check-clippy"] }
 # Tests
 test-cargo = "cargo --locked test --workspace"
