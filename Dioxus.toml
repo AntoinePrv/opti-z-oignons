@@ -1,13 +1,14 @@
 [application]
-
 name = "opti-z-oignons"
 
 [web.app]
 title = "Optz"
+base_path = "opti-z-oignons"
 
 [web.resource]
-style = []
-script = []
 
 [web.resource.dev]
-script = []
+
+[bundle]
+publisher = "AntoinePrv"
+short_description = "Table placement optimization interface"

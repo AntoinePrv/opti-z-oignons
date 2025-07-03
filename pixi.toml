@@ -15,6 +15,17 @@ sccache = ">=0.8.1"
 c-compiler = ">=1.7.0,<2"
 rust = ">=1.85.0"
 rust-std-wasm32-unknown-unknown = ">=1.83.0"
+dioxus = ">=0.6.3"
+
+[feature.build.activation.env]
+RUSTC_WRAPPER = "sccache"
+
+[feature.build.tasks.build-dx]
+depends-on = ["build-tailwind"]
+# public subfolder is created
+cmd = "dx bundle --platform web --release --out-dir ."
+inputs = ["Cargo.toml", "Cargo.lock", "src/**/*.rs", "assets/"]
+outputs = ["public"]
 
 [feature.css.tasks.init-cargo]
 cmd = "cargo fetch"
@@ -37,9 +48,6 @@ depends-on = ["init-tailwind"]
 cmd = "npx tailwindcss --input ./assets/main.tw.css --output ./assets/main.css"
 inputs = ["assets/main.tw.css", "src/**/*.rs"]
 outputs = ["assets/main.css"]
-
-[feature.build.activation.env]
-RUSTC_WRAPPER = "sccache"
 
 [feature.test.dependencies]
 pre-commit = ">=3.7.1"
@@ -68,8 +76,6 @@ ci = { depends-on = ["pre-commit-all"] }
 
 [feature.dev.dependencies]
 rust-src = ">=1.79.0"
-sccache = ">=0.8.1"
-dioxus = ">=0.6.3"
 watchexec = ">=2.2.0,<3"
 
 [feature.dev.tasks]
@@ -80,6 +86,3 @@ serve-dx = "dx serve"
 serve-tailwind = { depends-on = ["init-tailwind"], cmd = """
 npx tailwindcss --input ./assets/main.tw.css --output ./assets/main.css --watch
 """ }
-
-[feature.dev.activation.env]
-RUSTC_WRAPPER = "sccache"
