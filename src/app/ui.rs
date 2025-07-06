@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
-use crate::logic::model::{Tables, Tribe};
+use crate::logic::model::{Assignment, PersonName, Tables, Tribe};
 
 #[component]
 pub fn Card(header: Element, body: Element) -> Element {
@@ -74,16 +74,32 @@ pub fn ArmchairWithPerson() -> Element {
 }
 
 #[component]
-pub fn TableAndChairs(n_seats: u32, name: String) -> Element {
+pub fn TableAndChairs(
+    n_seats: u32,
+    name: String,
+    #[props(default)] persons: Option<Vec<PersonName>>,
+) -> Element {
     let angle = 360.0 / (n_seats as f32);
+
+    let remaining = n_seats as usize - persons.as_ref().map(Vec::len).unwrap_or(0);
+    let persons = persons
+        .into_iter()
+        .flatten()
+        .map(Some)
+        .chain(std::iter::repeat_n(None, remaining));
+
     rsx! {
         div { class: "relative w-28 h-28",
             // All the chairs
-            for i in (0..n_seats).map(|i| i as f32) {
+            for (i , person) in persons.enumerate() {
                 div {
                     class: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-                    style: "transform: rotate({i * angle}deg) translateX(40px);",
-                    ArmChairIcon {}
+                    style: "transform: rotate({i as f32 * angle}deg) translateX(40px);",
+                    if let Some(name) = person {
+                        ArmchairWithPerson {}
+                    } else {
+                        ArmChairIcon {}
+                    }
                 }
             }
             // Circle for the table
@@ -119,6 +135,25 @@ pub fn UnassignedSchema(tribe: Signal<Tribe>, tables: Signal<Tables>) -> Element
                     Person { name: person }
                 }
             }
+        }
+    }
+}
+
+#[component]
+pub fn AssignedSchema(tables: Signal<Tables>, assignment: Signal<Assignment>) -> Element {
+    rsx! {
+        div { class: "flex gap-8 w-full justify-center",
+            div { class: "basis-1/8" }
+            div { class: "basis-1/2 flex flex-wrap justify-center gap-2",
+                for (name , kind) in tables.read().iter() {
+                    TableAndChairs {
+                        n_seats: kind.n_seats,
+                        name,
+                        persons: assignment.read().get(name).cloned(),
+                    }
+                }
+            }
+            div { class: "basis-1/8" }
         }
     }
 }

@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons as icons};
 
 use crate::SolutionState;
-use crate::app::ui::CardSimple;
+use crate::app::ui::{AssignedSchema, CardSimple, UnassignedSchema};
 use crate::logic::model::Assignment;
 
 #[component]
@@ -11,8 +11,9 @@ pub fn Page() -> Element {
     let solution: crate::SolutionSignal = use_context();
 
     rsx! {
+        Schema { pb: pb.clone(), solution: solution.clone() }
         div { class: "px-8",
-            ControlBar { class: "py-4", pb, solution: solution.clone() }
+            ControlBar { class: "py-4", pb: pb.clone(), solution: solution.clone() }
             AssignmentSection { solution }
         }
     }
@@ -28,6 +29,25 @@ fn ControlBar(
         div { class: format!("flex justify-between items-center {}", class),
             SolveText { state: solution.state }
             SolveButton { pb, solution }
+        }
+    }
+}
+
+#[component]
+fn Schema(pb: crate::ProblemSignal, solution: crate::SolutionSignal) -> Element {
+    rsx! {
+
+        match *solution.state.read() {
+            SolutionState::Missing => {
+                rsx! {
+                    UnassignedSchema { tribe: pb.tribe, tables: pb.tables }
+                }
+            }
+            _ => {
+                rsx! {
+                    AssignedSchema { assignment: solution.assignment, tables: pb.tables }
+                }
+            }
         }
     }
 }
