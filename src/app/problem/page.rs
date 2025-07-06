@@ -92,7 +92,7 @@ fn ShowMeHowButton(tribe: Signal<Tribe>, tables: Signal<Tables>, class: &'static
 fn PersonIcon() -> Element {
     rsx! {
         Icon {
-            class: "stroke-base-content stroke-2",
+            class: "stroke-success stroke-2",
             width: 20,
             height: 20,
             icon: icons::LdPersonStanding,
@@ -103,7 +103,32 @@ fn PersonIcon() -> Element {
 #[component]
 fn ArmChairIcon() -> Element {
     rsx! {
-        div { class: "w-4 h-4 rounded-r-full border-4 border-l-0 border-stone-600 bg-stone-500 shadow-md" }
+        div { class: "w-4 h-4 rounded-r-full border-4 border-l-0 border-neutral bg-neutral-content shadow-md" }
+    }
+}
+
+#[component]
+fn PersonFromAbove() -> Element {
+    rsx! {
+        div { class: "relative w-4 h-4",
+            // Head
+            div { class: "absolute top-1/2  left-1/2 -translate-1/2 w-2.5 h-2.5 rounded-full bg-success" }
+            // Arms
+            // -translate-x-1/2 to center -translate-x-1/2 to offset
+            div { class: "absolute top-1/2 left-1/2 -translate-x-full w-1 h-3 origin-top rotate-45 rounded bg-success" }
+            // -translate-x-1/2 to center +translate-x-1/2 to offset
+            div { class: "absolute top-1/2 left-1/2  w-1 h-3 origin-top -rotate-45 rounded bg-success" }
+        }
+    }
+}
+
+#[component]
+fn ArmchairWithPerson() -> Element {
+    rsx! {
+        div { class: "relative w-4 h-4",
+            div { class: "absolute", ArmChairIcon {} }
+            div { class: "absolute rotate-90", PersonFromAbove {} }
+        }
     }
 }
 
@@ -113,7 +138,7 @@ fn TableAndChairs(n_seats: u32) -> Element {
     rsx! {
         div { class: "relative w-28 h-28",
             // Circle for the table
-            div { class: "absolute top-1/2 left-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 bg-stone-400 rounded-full shadow-md" }
+            div { class: "absolute top-1/2 left-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 bg-neutral rounded-full shadow-md" }
             // All the chairs
             for i in (0..n_seats).map(|i| i as f32) {
                 div {
