@@ -74,39 +74,91 @@ pub fn ArmchairWithPerson() -> Element {
 }
 
 #[component]
+pub fn ArmchairWithMaybePerson(empty: bool) -> Element {
+    rsx! {
+        if empty {
+            ArmChairIcon {}
+        } else {
+            ArmchairWithPerson {}
+        }
+    }
+}
+
+#[component]
+fn Rotated(angle: f32, children: Element) -> Element {
+    return rsx! {
+        div { style: "transform:  rotate({angle}deg);", {children} }
+    };
+}
+
+fn seat_angle_deg(i: usize, n: u32) -> f32 {
+    const FULL_CIRCLE: f32 = 360.0;
+    (i as f32) * FULL_CIRCLE / (n as f32)
+}
+
+fn seat_translate_unit(i: usize, n: u32) -> (f32, f32) {
+    const FULL_CIRCLE: f64 = std::f64::consts::PI * 2.0;
+    let angle = (i as f64) * FULL_CIRCLE / (n as f64);
+    ((angle.cos() as f32), (angle.sin() as f32))
+}
+
+#[component]
 pub fn TableAndChairs(
     n_seats: u32,
     name: String,
     #[props(default)] persons: Option<Vec<PersonName>>,
 ) -> Element {
-    let angle = 360.0 / (n_seats as f32);
-
     let remaining = n_seats as usize - persons.as_ref().map(Vec::len).unwrap_or(0);
-    let persons = persons
+    const SEAT_TRANSLATE_PX: f32 = 40.0;
+    let position_persons = persons
+        // Make an iterator of has many Option person as there are seats
         .into_iter()
         .flatten()
         .map(Some)
-        .chain(std::iter::repeat_n(None, remaining));
+        .chain(std::iter::repeat_n(None, remaining))
+        // Compute the position and angle related to each seat
+        .enumerate()
+        .map(|(i, p)| {
+            let (tx, ty) = seat_translate_unit(i, n_seats);
+            (
+                seat_angle_deg(i, n_seats),
+                tx * SEAT_TRANSLATE_PX,
+                ty * SEAT_TRANSLATE_PX,
+                p,
+            )
+        });
 
     rsx! {
         div { class: "relative w-28 h-28",
-            // All the chairs
-            for (i , person) in persons.enumerate() {
-                div {
-                    class: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-                    style: "transform: rotate({i as f32 * angle}deg) translateX(40px);",
-                    if let Some(name) = person {
-                        ArmchairWithPerson {}
-                    } else {
-                        ArmChairIcon {}
-                    }
-                }
-            }
             // Circle for the table
             div {
                 class: concat!(
-                    "w-12 h-12 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-                    " bg-neutral rounded-full shadow-md tooltip tooltip-neutral tooltip-bottom",
+                    "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                    " w-12 h-12 bg-neutral rounded-full shadow-md ",
+                ),
+            }
+            // All the chairs
+            for (angle , tx , ty , person) in position_persons {
+                div {
+                    class: concat!(
+                        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                        " tooltip tooltip-neutral tooltip-bottom",
+                    ),
+                    style: "transform: translateX({tx}px) translateY({ty}px);",
+                    "data-tip": person,
+                    Rotated { angle,
+                        ArmchairWithMaybePerson { empty: person.is_none() }
+                    }
+                }
+            }
+            // FIXME: Tooltip for the table
+            // There is some issue in the tooltip being under the seats otherwise, which
+            // before:z-10 does not solve.
+            // This solution is imperfect because it it still hidden by the next chair
+            div {
+                class: concat!(
+                    "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                    "w-12 h-12 tooltip tooltip-neutral tooltip-bottom",
                 ),
                 "data-tip": name,
             }
