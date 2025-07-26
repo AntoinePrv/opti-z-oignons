@@ -12,7 +12,7 @@ pub fn Page() -> Element {
 
     rsx! {
         Schema { pb: pb.clone(), solution: solution.clone() }
-        div { class: "px-8",
+        div { class: "p-2 pb-8 lg:px-8",
             ControlBar { class: "py-4", pb: pb.clone(), solution: solution.clone() }
             AssignmentSection { solution }
         }

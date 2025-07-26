@@ -15,8 +15,8 @@ pub fn Page() -> Element {
             tables: pb.tables,
             tribe: pb.tribe,
         }
-        div { class: "p-8 flex gap-8",
-            div { class: "basis-1/3",
+        div { class: "space-y-2 p-2 pb-8 lg:px-8  lg:gap-4 lg:flex",
+            div { class: "lg:basis-1/3",
                 Card {
                     header: rsx! {
                         div { class: "w-full flex justify-between",
@@ -29,7 +29,7 @@ pub fn Page() -> Element {
                     },
                 }
             }
-            div { class: "basis-1/3",
+            div { class: "lg:basis-1/3",
                 Card {
                     header: rsx! {
                         div { class: "w-full flex justify-between",
@@ -42,7 +42,7 @@ pub fn Page() -> Element {
                     },
                 }
             }
-            div { class: "basis-1/3",
+            div { class: "lg:basis-1/3",
                 Card {
                     header: rsx! {
                         div { class: "w-full flex justify-between",
