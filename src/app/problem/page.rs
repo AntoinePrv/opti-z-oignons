@@ -184,38 +184,86 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
 
 #[component]
 fn PersonInput(tribe: Signal<Tribe>) -> Element {
-    const PERSON_NAME_ID: &str = "person_name";
+    // TODO fixme new lines striped by browser in <input>
+    const SPLIT_CHARS: [char; 3] = [',', ';', '\n'];
+
+    // TODO use empty string has marker for deleted
+    let mut persons = use_signal(Vec::<String>::new);
+    let mut current = use_signal(String::new);
+
+    let parse_input = move |event: Event<FormData>| {
+        let mut remaining = event.value();
+        let mut count: usize = 0;
+        while let Some((h, r)) = remaining.split_once(SPLIT_CHARS) {
+            let h = h.trim();
+            persons.push(h.trim().into());
+            remaining = r.into();
+            count += 1;
+        }
+
+        // Detect paste-like event (even when disabled) when there are more than one separator
+        if count >= 2 {
+            let remaining = remaining.trim();
+            if !remaining.is_empty() {
+                persons.push(remaining.into());
+            }
+            // We must trigger a rerender to really clear the value from the pasted data.
+            // This way we ensure the value always changes
+            if current.read().is_empty() {
+                current.set(" ".into());
+            } else {
+                current.set("".into());
+            }
+        }
+        // User is still typing
+        else {
+            current.set(remaining);
+        }
+    };
 
     rsx! {
         SectionAdd { title: "Add a new person",
-            // TODO: add "tribe" for auto conflicts
+            // TODO: add "group" for auto conflicts
             // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist
-            form {
-                class: "mx-auto space-y-2",
-                onsubmit: move |event| {
-                    let name_input = event
-                        .data
-                        .values()
-                        .remove(PERSON_NAME_ID)
-                        .map(|val| val.as_value());
-                    if let Some(name) = name_input {
-                        tribe.write().add_person(name);
+            form { class: "mx-auto space-y-2",
+                label { class: "floating-label input focus-within:outline-none w-full flex-wrap h-auto py-2",
+                    for (i , pers) in persons.read().iter().enumerate() {
+                        if !pers.is_empty() {
+                            div {
+                                key: "{i}",
+                                class: "badge badge-soft badge-accent",
+                                "{pers}"
+                            }
+                        }
                     }
-                },
-                label { r#for: PERSON_NAME_ID, class: "floating-label",
+
                     input {
-                        id: PERSON_NAME_ID,
-                        name: PERSON_NAME_ID,
                         r#type: "text",
                         minlength: 1,
-                        class: "input focus:outline-none w-full",
-                        placeholder: "Person name",
+                        placeholder: "First Person, Second Person, ...",
+                        value: "{current}",
+                        oninput: parse_input,
                     }
-                    span { "Person name" }
+                    // TODO this moves out when there are inputs and focus is lost
+                    span { "Persons" }
                 }
+                div { class: "divider", "OR" }
                 button {
                     class: "btn btn-primary ml-auto block w-32",
                     r#type: "submit",
+                    onclick: {
+                        let mut persons = persons;
+                        let mut current = current;
+                        move |_| {
+                            std::mem::take(&mut *persons.write())
+                                .into_iter()
+                                .for_each(|p| tribe.write().add_person(p));
+                            let maybe_person = std::mem::take(&mut *current.write());
+                            if !maybe_person.is_empty() {
+                                tribe.write().add_person(maybe_person);
+                            }
+                        }
+                    },
                     "Add"
                 }
             }
@@ -260,7 +308,7 @@ fn TableInput(tables: Signal<Tables>) -> Element {
     const TABLE_NAME_ID: &str = "table_name";
 
     rsx! {
-        SectionAdd { title: "Add multiple tables",
+        SectionAdd { title: "Add tables",
             form {
                 class: "mx-auto space-y-2",
                 onsubmit: move |event| {
