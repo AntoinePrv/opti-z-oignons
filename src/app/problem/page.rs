@@ -233,19 +233,19 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
                             }
                         }
                     }
-
-                    input {
-                        r#type: "text",
-                        minlength: 1,
+                    textarea {
+                        class: "resize-none w-auto min-w-60 overflow-hidden border-none outline-none focus:outline-none",
+                        rows: 1,
                         placeholder: "First Person, Second Person, ...",
                         value: current,
                         key: input_key,
                         oninput: parse_input,
                     }
-                    // TODO this moves out when there are inputs and focus is lost
                     span { "Persons" }
                 }
+
                 div { class: "divider", "OR" }
+
                 button {
                     class: "btn btn-primary ml-auto block w-32",
                     r#type: "submit",
