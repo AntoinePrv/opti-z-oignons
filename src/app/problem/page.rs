@@ -223,25 +223,31 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
             // TODO: add "group" for auto conflicts
             // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist
             form { class: "mx-auto space-y-2",
-                label { class: "floating-label input focus-within:outline-none w-full flex-wrap h-auto py-2",
-                    for (i , pers) in persons.read().iter().enumerate() {
-                        if !pers.is_empty() {
-                            div {
-                                key: "{i}",
-                                class: "badge badge-soft badge-accent",
-                                "{pers}"
+                fieldset { class: "fieldset",
+                    label { class: "floating-label input focus-within:outline-none w-full flex-wrap h-auto py-2",
+                        for (i , pers) in persons.read().iter().enumerate() {
+                            if !pers.is_empty() {
+                                div {
+                                    key: "{i}",
+                                    class: "badge badge-soft badge-accent",
+                                    "{pers}"
+                                }
                             }
                         }
+                        textarea {
+                            class: "resize-none w-auto min-w-60 overflow-hidden border-none outline-none focus:outline-none",
+                            rows: 1,
+                            placeholder: "First Person, Second Person, ...",
+                            value: current,
+                            key: input_key,
+                            oninput: parse_input,
+                        }
+                        span { "Persons" }
                     }
-                    textarea {
-                        class: "resize-none w-auto min-w-60 overflow-hidden border-none outline-none focus:outline-none",
-                        rows: 1,
-                        placeholder: "First Person, Second Person, ...",
-                        value: current,
-                        key: input_key,
-                        oninput: parse_input,
+                    p { class: "label",
+                        Icon { class: "size-[1em]", icon: icons::LdInfo }
+                        "You can data from a spreadsheet"
                     }
-                    span { "Persons" }
                 }
 
                 div { class: "divider", "OR" }
