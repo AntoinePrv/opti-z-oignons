@@ -184,10 +184,8 @@ fn PersonList(tribe: Signal<Tribe>) -> Element {
 
 #[component]
 fn PersonInput(tribe: Signal<Tribe>) -> Element {
-    // TODO fixme new lines striped by browser in <input>
     const SPLIT_CHARS: [char; 3] = [',', ';', '\n'];
 
-    // TODO use empty string has marker for deleted
     let mut persons = use_signal(Vec::<String>::new);
     let mut current = use_signal(String::new);
     let mut input_key = use_signal(|| 0);
@@ -225,12 +223,27 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
             form { class: "mx-auto space-y-2",
                 fieldset { class: "fieldset",
                     label { class: "floating-label input focus-within:outline-none w-full flex-wrap h-auto py-2",
+                        // Phantom button so that the first delete button does not trigger when the
+                        // whole element is hovered
+                        button { class: "hidden" }
                         for (i , pers) in persons.read().iter().enumerate() {
                             if !pers.is_empty() {
                                 div {
                                     key: "{i}",
-                                    class: "badge badge-soft badge-accent",
-                                    "{pers}"
+                                    class: "badge badge-soft badge-accent overflow-hidden pr-0",
+                                    span { "{pers}" }
+                                    button {
+                                        class: "btn-ghost cursor-pointer hover:bg-accent-content h-full pl-1 pr-2",
+                                        onclick: move |_| {
+                                            if let Some(name) = persons.write().get_mut(i) {
+                                                name.clear();
+                                            }
+                                        },
+                                        Icon {
+                                            class: "size-[1em]",
+                                            icon: icons::LdX,
+                                        }
+                                    }
                                 }
                             }
                         }
