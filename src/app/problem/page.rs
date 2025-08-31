@@ -190,6 +190,7 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
     // TODO use empty string has marker for deleted
     let mut persons = use_signal(Vec::<String>::new);
     let mut current = use_signal(String::new);
+    let mut input_key = use_signal(|| 0);
 
     let parse_input = move |event: Event<FormData>| {
         let mut remaining = event.value();
@@ -207,18 +208,14 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
             if !remaining.is_empty() {
                 persons.push(remaining.into());
             }
-            // We must trigger a rerender to really clear the value from the pasted data.
-            // This way we ensure the value always changes
-            if current.read().is_empty() {
-                current.set(" ".into());
-            } else {
-                current.set("".into());
-            }
+            current.set("".into());
         }
         // User is still typing
         else {
             current.set(remaining);
         }
+        // We must trigger a rerender to really clear the value from the pasted data.
+        *input_key.write() += 1;
     };
 
     rsx! {
@@ -241,7 +238,8 @@ fn PersonInput(tribe: Signal<Tribe>) -> Element {
                         r#type: "text",
                         minlength: 1,
                         placeholder: "First Person, Second Person, ...",
-                        value: "{current}",
+                        value: current,
+                        key: input_key,
                         oninput: parse_input,
                     }
                     // TODO this moves out when there are inputs and focus is lost
